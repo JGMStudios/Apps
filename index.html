@@ -1,0 +1,1103 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>JGM Apps</title>
+    <!-- Tailwind CSS for styling -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Font Awesome for icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+    <!-- Papa Parse for CSV handling -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
+    <!-- Chart.js for creating charts -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <!-- SheetJS (XLSX) for Excel export -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+    <!-- React & Babel for Horus Date App -->
+    <script src="https://unpkg.com/react@18/umd/react.development.js"></script>
+    <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    <style>
+        /* Custom styles for better UX */
+        body,
+        html {
+            height: 100%;
+            overflow-x: hidden;
+            margin: 0;
+            padding: 0;
+            scroll-behavior: smooth;
+            font-family: 'Inter', sans-serif;
+        }
+
+        .modal {
+            transition: opacity 0.3s ease-in-out;
+        }
+
+        .modal .transform {
+            transition: transform 0.3s ease-in-out;
+        }
+
+        #login-screen,
+        #landing-screen,
+        #app-welcome,
+        #horus-date-container {
+            min-height: 100vh;
+            width: 100vw;
+        }
+
+        #horus-date-container,
+        #horus-date-react-root {
+            height: 100%;
+            width: 100%;
+            border: none;
+        }
+
+        /* Sync/Logout Button Animation */
+        #syncDataBtn.syncing i {
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            from {
+                transform: rotate(0deg);
+            }
+            to {
+                transform: rotate(360deg);
+            }
+        }
+
+        .option-card {
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        .option-card:hover {
+            transform: translateY(-10px);
+            box-shadow: 0 20px 25px -5px rgb(0 0 0 / 0.1), 0 8px 10px -6px rgb(0 0 0 / 0.1);
+        }
+
+        /* Animated Gradient Background */
+        .theme-default #landing-screen, 
+        .theme-default #login-screen, 
+        .theme-default #app-welcome {
+            background: linear-gradient(-45deg, #1f2937, #3730a3, #ec4899, #7c3aed);
+            background-size: 400% 400%;
+            animation: gradient-wave 15s ease infinite;
+        }
+
+        @keyframes gradient-wave {
+            0% {
+                background-position: 0% 50%;
+            }
+            50% {
+                background-position: 100% 50%;
+            }
+            100% {
+                background-position: 0% 50%;
+            }
+        }
+
+        .icon-wrapper {
+            width: 80px;
+            height: 70px;
+            margin: 0 auto 1.5rem auto;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        /* Anubis Scales Animation */
+        .anubis-scales-wrapper {
+            animation: scales-tilt 3s ease-in-out infinite;
+            transform-origin: 50% 50%;
+        }
+
+        @keyframes scales-tilt {
+            0%,
+            100% {
+                transform: rotate(0deg);
+            }
+            25% {
+                transform: rotate(-7deg);
+            }
+            75% {
+                transform: rotate(7deg);
+            }
+        }
+
+        /* Horus Eye Pulse Animation */
+        .horus-eye-wrapper {
+            animation: pulse-eye 2.5s infinite;
+        }
+
+        @keyframes pulse-eye {
+            0%,
+            100% {
+                transform: scale(1);
+                filter: drop-shadow(0 0 0 #fff);
+            }
+            50% {
+                transform: scale(1.1);
+                filter: drop-shadow(0 0 8px #fff) drop-shadow(0 0 15px #8b5cf6);
+            }
+        }
+         .muse-icon-wrapper .snake {
+            transform-origin: 50% 50%;
+            animation: snake-sway 3s infinite ease-in-out;
+        }
+
+        .muse-icon-wrapper .snake:nth-child(even) {
+            animation-duration: 2.5s;
+            animation-delay: 0.2s;
+        }
+
+        .muse-icon-wrapper .snake:nth-child(3n) {
+            animation-duration: 3.5s;
+            animation-delay: 0.5s;
+        }
+
+        @keyframes snake-sway {
+            0%,
+            100% {
+                transform: rotate(0deg) translateX(0);
+            }
+            50% {
+                transform: rotate(5deg) translateX(5px);
+            }
+        }
+
+        .greek-ship {
+            animation: ship-rock 4s ease-in-out infinite;
+            transform-origin: bottom center;
+        }
+
+        .wave {
+            stroke-dasharray: 100;
+            stroke-dashoffset: 0;
+            animation: wave-flow 4s linear infinite;
+        }
+
+        @keyframes ship-rock {
+            0%,
+            100% {
+                transform: rotate(0deg);
+            }
+            50% {
+                transform: rotate(-8deg);
+            }
+        }
+
+        @keyframes wave-flow {
+            from {
+                stroke-dashoffset: 200;
+            }
+            to {
+                stroke-dashoffset: 0;
+            }
+        }
+        
+        /* --- THEME STYLES --- */
+        /* Light Theme */
+        .theme-light, .theme-light body { background-color: #f1f5f9; }
+        .theme-light #landing-screen, .theme-light #login-screen, .theme-light #app-welcome { background: #f1f5f9; }
+        .theme-light #landing-screen h1, .theme-light #login-screen h1, .theme-light #app-welcome h1, .theme-light .option-card h2, .theme-light .text-white { color: #1e293b; }
+        .theme-light #landing-screen p, .theme-light #login-screen p, .theme-light #app-welcome p, .theme-light .option-card p, .theme-light .text-indigo-200 { color: #475569; }
+        .theme-light .option-card { background-color: #ffffff; box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1); }
+        .theme-light .option-card svg { stroke: #4f46e5; fill: #4f46e5 }
+        .theme-light .option-card circle { fill: #4f46e5; }
+        .theme-light #app { background-color: #e2e8f0; }
+        .theme-light #sidebar { background-color: #ffffff; color: #1f2937; }
+        .theme-light #sidebar nav a { color: #334152; }
+        .theme-light #sidebar nav a.bg-indigo-600 { background-color: #e0e7ff; color: #3730a3; }
+        .theme-light #sidebar nav a:hover { background-color: #eef2ff; }
+        .theme-light #main-content header, .theme-light #tab-content-wrapper > div, .theme-light .bg-slate-50 { background-color: #f8fafc; }
+        .theme-light #tab-content h2, .theme-light #tab-content h3, .theme-light #tab-content th { color: #334152; }
+        .theme-light .text-slate-500 { color: #64748b } .theme-light .text-slate-800 {color: #1e293b;}
+        .theme-light #horus-date-container { background-color: #f1f5f9; }
+        .theme-light #horus-date-react-root .bg-gray-900 { background-color: #f1f5f9 !important; }
+        .theme-light #horus-date-react-root .bg-gray-800 { background-color: #ffffff !important; box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1); }
+        .theme-light #horus-date-react-root .bg-gray-700 { background-color: #f8fafc !important; }
+        .theme-light #horus-date-react-root .bg-gray-700\/50 { background-color: rgba(241, 245, 249, 0.5) !important; }
+        .theme-light #horus-date-react-root .text-white { color: #1f2937 !important; }
+        .theme-light #horus-date-react-root .text-gray-300, .theme-light #horus-date-react-root .text-gray-400 { color: #475569 !important; }
+        .theme-light #horus-date-react-root .border-gray-600 { border-color: #e2e8f0 !important; }
+
+
+        /* Dark Theme */
+        .theme-dark, .theme-dark body { background-color: #020617; }
+        .theme-dark #landing-screen, .theme-dark #login-screen, .theme-dark #app-welcome { background: #020617; }
+        .theme-dark .bg-white\/10 { background-color: rgba(30, 41, 59, 0.5); backdrop-filter: blur(10px); }
+        .theme-dark .text-indigo-600 { color: #c7d2fe; }
+        .theme-dark .hover\:bg-indigo-100:hover { background-color: #1e293b; }
+        .theme-dark #app { background-color: #0f172a; }
+        .theme-dark #sidebar { background-color: #1e293b; border-right: 1px solid #334155; }
+        .theme-dark #sidebar nav a { color: #94a3b8; }
+        .theme-dark #sidebar nav a.bg-indigo-600 { background-color: #4338ca; color: #ffffff;}
+        .theme-dark #sidebar nav a:hover { background-color: #334152; }
+        .theme-dark #main-content header, .theme-dark #tab-content, .theme-dark #tab-content-wrapper > div { background-color: #1e293b; color: #e2e8f0; border-color: #334155; }
+        .theme-dark #tab-content h2, .theme-dark #tab-content h3 { color: #e2e8f0; }
+        .theme-dark #tab-content th { color: #94a3b8; }
+        .theme-dark #tab-content table, .theme-dark #tab-content tr, .theme-dark #tab-content td, .theme-dark #tab-content .divide-y > :not([hidden]) ~ :not([hidden]) { border-color: #334155; }
+        .theme-dark #tab-content .bg-white, .theme-dark #tab-content .even\:bg-white tr:nth-child(even) { background-color: #1e293b;}
+        .theme-dark #tab-content .hover\:bg-slate-50 tr:hover { background-color: #334152;}
+        .theme-dark .text-slate-500 { color: #64748b }
+        .theme-dark .text-slate-800 {color: #e2e8f0;}
+        .theme-dark .bg-slate-50 { background-color: #334155 }
+
+    </style>
+</head>
+<body>
+    <!-- Theme Switcher Button -->
+    <div id="theme-switcher" class="fixed bottom-5 right-5 z-50">
+        <button id="theme-btn" class="w-12 h-12 bg-gray-800 text-white rounded-full shadow-lg flex items-center justify-center transition-transform hover:scale-110">
+            <i class="fas fa-palette"></i>
+        </button>
+    </div>
+
+    <!-- ... rest of the body ... -->
+    
+    <!-- Landing Screen -->
+    <div id="landing-screen" class="animated-gradient relative flex flex-col p-4 items-center justify-center">
+        <div class="flex-grow flex flex-col items-center justify-center py-8">
+            <div class="text-center mb-12">
+                <h1 class="text-5xl md:text-6xl font-bold text-white mb-4 tracking-tight">Bienvenido a JGM Apps</h1>
+                <p class="text-indigo-200 text-lg">Seleccione la aplicación que desea utilizar</p>
+            </div>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                <!-- Inventory App Card -->
+                <div id="goToInventoryBtn" class="option-card cursor-pointer bg-white/10 backdrop-blur-lg rounded-xl shadow-2xl p-8 w-80 text-center">
+                    <div class="icon-wrapper anubis-scales-wrapper">
+                        <svg viewbox="0 0 100 90" fill="none" stroke="white" stroke-width="5" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M50 85 V 75"></path><path d="M30 75 H 70"></path><path d="M50 75 V 15"></path><circle cx="50" cy="15" r="5"></circle><path d="M5 20 H 95"></path><g class="left-scale"><path d="M25 20 L 15 35"></path><path d="M5 55 C 5 40, 45 40, 45 55"></path></g><g class="right-scale"><path d="M75 20 L 85 35"></path><path d="M55 55 C 55 40, 95 40, 95 55"></path></g>
+                        </svg>
+                    </div>
+                    <h2 class="text-3xl font-bold text-white">NemeSync Stock</h2>
+                    <p class="text-indigo-200 text-md mt-2">Control de Inventario</p>
+                </div>
+                <!-- Appointments App Card -->
+                <div id="goToAppointmentsBtn" class="option-card cursor-pointer bg-white/10 backdrop-blur-lg rounded-xl shadow-2xl p-8 w-80 text-center">
+                    <div class="icon-wrapper horus-eye-wrapper">
+                        <svg viewbox="0 0 100 65" fill="none" stroke="white" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round">
+                            <g transform="translate(0, 5)"><path d="M5 30 C 20 5, 80 5, 95 30 C 80 55, 20 55, 5 30Z"></path><circle cx="50" cy="30" r="12" fill="white"></circle><path d="M50 42 C 55 55, 65 62, 75 58"></path><path d="M75 58 L 70 65"></path><g stroke-width="3"><path d="M50 12 L 50 5"></path><path d="M25 20 L 18 13"></path><path d="M75 20 L 82 13"></path><path d="M8 30 L 0 30"></path><path d="M92 30 L 100 30"></path><path d="M25 40 L 18 47"></path><path d="M75 40 L 82 47"></path></g></g>
+                        </svg>
+                    </div>
+                    <h2 class="text-3xl font-bold text-white">Horus Date</h2>
+                    <p class="text-indigo-200 text-md mt-2">El Ojo que todo lo Agenda</p>
+                </div>
+                 <!-- Muse IA Card -->
+                <div id="goToMuseIABtn" class="option-card cursor-pointer bg-white/10 backdrop-blur-lg rounded-xl shadow-2xl p-8 w-80 text-center">
+                    <div class="icon-wrapper muse-icon-wrapper">
+                         <svg viewbox="0 0 100 100" fill="white" stroke-linecap="round" stroke-linejoin="round">
+                            <g transform="scale(1.2) translate(-8, -10)">
+                                <path d="M49.5,75.5 C49.5,75.5 45.5,85.5 49.5,90.5 C53.5,85.5 49.5,75.5 49.5,75.5 M49.5,58.5 C49.5,58.5 41.5,58.5 41.5,66.5 C41.5,74.5 57.5,74.5 57.5,66.5 C57.5,58.5 49.5,58.5 49.5,58.5 " stroke="white" fill="none" stroke-width="2.5"></path>
+                                <path class="snake" d="M34.5,46.5 C19.5,41.5 28.5,19.5 40.5,19.5 C52.5,19.5 48.5,35.5 46.5,41.5 " stroke="white" fill="none" stroke-width="3"></path>
+                                <path class="snake" d="M64.5,46.5 C79.5,41.5 70.5,19.5 58.5,19.5 C46.5,19.5 50.5,35.5 52.5,41.5 " stroke="white" fill="none" stroke-width="3"></path>
+                                <path class="snake" d="M29.5,58.5 C14.5,53.5 14.5,30.5 28.5,27.5 C42.5,24.5 41.5,44.5 41.5,52.5 " stroke="white" fill="none" stroke-width="3"></path>
+                                <path class="snake" d="M69.5,58.5 C84.5,53.5 84.5,30.5 70.5,27.5 C56.5,24.5 57.5,44.5 57.5,52.5 " stroke="white" fill="none" stroke-width="3"></path>
+                                <path class="snake" d="M49.5,58.5 C49.5,58.5 49.5,10.5 41.5,5.5 C33.5,0.5 24.5,12.5 32.5,24.5 " stroke="white" fill="none" stroke-width="3"></path>
+                                <path class="snake" d="M49.5,58.5 C49.5,58.5 49.5,10.5 57.5,5.5 C65.5,0.5 74.5,12.5 66.5,24.5 " stroke="white" fill="none" stroke-width="3"></path>
+                                <path class="snake" d="M22.5,67.5 C2.5,67.5 10.5,46.5 25.5,44.5 C40.5,42.5 38.5,59.5 36.5,64.5 " stroke="white" fill="none" stroke-width="3"></path>
+                                <path class="snake" d="M76.5,67.5 C96.5,67.5 88.5,46.5 73.5,44.5 C58.5,42.5 60.5,59.5 62.5,64.5 " stroke="white" fill="none" stroke-width="3"></path>
+                                <path class="snake" d="M49.5,58.5 C34.5,53.5 29.5,41.5 29.5,41.5 " stroke="white" fill="none" stroke-width="3"></path>
+                            </g>
+                        </svg>
+                    </div>
+                    <h2 class="text-3xl font-bold text-white">Muse IA</h2>
+                    <p class="text-indigo-200 text-md mt-2">Inspiracion de las 9 Musas</p>
+                </div>
+                 <!-- Odisea IA Card -->
+                <div id="goToOdiseaIABtn" class="option-card cursor-pointer bg-white/10 backdrop-blur-lg rounded-xl shadow-2xl p-8 w-80 text-center">
+                    <div class="icon-wrapper">
+                         <svg class="greek-ship" viewbox="0 0 100 80">
+                            <g transform="scale(1.2) translate(-10, -10)">
+                               <path d="M 20 60 L 80 60 L 75 40 L 25 40 Z" fill="white" stroke="white" stroke-width="2"></path>
+                               <path d="M 20 60 C 10 60 10 40 20 40" stroke="white" fill="none" stroke-width="2"></path>
+                               <path d="M 80 60 C 90 60 90 40 80 40" stroke="white" fill="none" stroke-width="2"></path>
+                               <rect x="48" y="10" width="4" height="30" fill="white"></rect>
+                               <path d="M 50 15 L 75 25 L 50 35 Z" fill="white"></path>
+                               <path class="wave" d="M -10 70 Q 15 60, 40 70 T 90 70 T 140 70" fill="none" stroke="white" stroke-width="4"></path>
+                            </g>
+                        </svg>
+                    </div>
+                    <h2 class="text-3xl font-bold text-white">Odisea IA</h2>
+                    <p class="text-indigo-200 text-md mt-2">Crea y Viaja Sin Límites</p>
+                </div>
+            </div>
+        </div>
+        <footer class="w-full text-center p-4 text-white text-sm shrink-0">
+            JGM Studios © 2025. Todos los derechos reservados.
+        </footer>
+    </div>
+
+    <!-- Unified Login Screen -->
+    <div id="login-screen" class="hidden relative items-center justify-center animated-gradient p-4">
+        <div class="w-full max-w-sm mx-auto">
+            <button id="backToLandingBtn" class="absolute top-5 left-5 text-white bg-white/20 rounded-full w-10 h-10 flex items-center justify-center hover:bg-white/30 transition">
+                <i class="fas fa-arrow-left"></i>
+            </button>
+            <div class="bg-white/10 backdrop-blur-lg rounded-xl shadow-2xl p-8">
+                <div class="text-center mb-8">
+                    <div id="loginIconWrapper" class="icon-wrapper mb-4"></div>
+                    <h1 id="loginTitle" class="text-3xl font-bold text-white"></h1>
+                    <p class="text-indigo-200">Por favor, inicie sesión</p>
+                </div>
+                <form id="loginForm">
+                    <div class="mb-4">
+                        <label for="email" class="sr-only">Email</label>
+                        <div class="relative">
+                            <input type="email" id="email" class="w-full bg-white/20 text-white placeholder-indigo-200 border border-white/30 rounded-lg py-3 px-4 pl-12 focus:outline-none focus:ring-2 focus:ring-white/50" placeholder="Email" required>
+                            <i class="fas fa-envelope absolute left-4 top-1/2 -translate-y-1/2 text-indigo-200"></i>
+                        </div>
+                    </div>
+                    <div class="mb-6">
+                        <label for="password" class="sr-only">Contraseña</label>
+                        <div class="relative">
+                            <input type="password" id="password" class="w-full bg-white/20 text-white placeholder-indigo-200 border border-white/30 rounded-lg py-3 px-4 pl-12 pr-12 focus:outline-none focus:ring-2 focus:ring-white/50" placeholder="Contraseña" required>
+                            <i class="fas fa-lock absolute left-4 top-1/2 -translate-y-1/2 text-indigo-200"></i>
+                            <button type="button" id="togglePassword" class="absolute right-4 top-1/2 -translate-y-1/2 text-indigo-200 hover:text-white"><i class="fas fa-eye"></i></button>
+                        </div>
+                    </div>
+                    <button type="submit" class="w-full bg-white text-indigo-600 font-bold py-3 px-4 rounded-lg hover:bg-indigo-100 transition-colors duration-300 shadow-lg">Ingresar</button>
+                    <p id="loginError" class="text-red-300 text-center mt-4 text-sm font-semibold hidden"></p>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main App Container (NemeSync Stock with Sidebar) -->
+    <div id="app" class="hidden h-screen flex bg-gray-200">
+        <!-- Sidebar Navigation -->
+        <aside id="sidebar" class="bg-gray-800 text-white w-64 space-y-6 py-7 px-2 absolute inset-y-0 left-0 transform -translate-x-full md:relative md:translate-x-0 transition duration-300 ease-in-out z-40 shadow-lg">
+            <div class="px-4 mb-8 flex items-center gap-3">
+                <div class="w-10 h-10 text-purple-400">
+                    <svg viewbox="0 0 100 90" fill="none" stroke="currentColor" stroke-width="6" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M50 85 V 75"></path><path d="M30 75 H 70"></path><path d="M50 75 V 15"></path><circle cx="50" cy="15" r="5"></circle><path d="M5 20 H 95"></path><g class="left-scale"><path d="M25 20 L 15 35"></path><path d="M5 55 C 5 40, 45 40, 45 55"></path></g><g class="right-scale"><path d="M75 20 L 85 35"></path><path d="M55 55 C 55 40, 95 40, 95 55"></path></g>
+                    </svg>
+                </div>
+                <div>
+                    <h2 class="text-2xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-blue-400 via-purple-400 to-orange-400">NemeSync</h2>
+                    <p class="text-sm text-indigo-300">Control de Inventario</p>
+                </div>
+            </div>
+            <nav id="sidebar-nav" class="flex flex-col space-y-2"></nav>
+        </aside>
+
+        <!-- Main Content -->
+        <div id="main-content" class="flex-1 flex flex-col overflow-hidden">
+            <!-- Main Header -->
+            <header class="bg-white shadow-md z-30">
+                <div class="flex items-center justify-between p-4">
+                    <button id="sidebar-toggle" class="text-gray-600 focus:outline-none md:hidden">
+                        <i class="fas fa-bars fa-lg"></i>
+                    </button>
+                    <div class="flex-1"></div>
+                    <div class="flex flex-wrap items-center gap-2">
+                        <button id="openEntryModalBtn" class="bg-green-500 text-white font-bold w-10 h-10 rounded-lg hover:bg-green-600 transition-colors flex items-center justify-center shadow-md" title="Registrar Entrada"><i class="fas fa-plus"></i></button>
+                        <button id="openExitModalBtn" class="bg-red-500 text-white font-bold w-10 h-10 rounded-lg hover:bg-red-600 transition-colors flex items-center justify-center shadow-md" title="Registrar Salida"><i class="fas fa-minus"></i></button>
+                        <button id="openArchivesListBtn" class="bg-yellow-500 text-white font-bold w-10 h-10 rounded-lg hover:bg-yellow-600 transition-colors flex items-center justify-center shadow-md" title="Ver Archivos"><i class="fas fa-folder-open"></i></button>
+                        <button id="openSaveMonthModalBtn" class="bg-indigo-500 text-white font-bold w-10 h-10 rounded-lg hover:bg-indigo-600 transition-colors flex items-center justify-center shadow-md" title="Archivar Mes"><i class="fas fa-calendar-check"></i></button>
+                        <button id="logoutBtn" class="bg-slate-600 text-white font-bold w-10 h-10 rounded-lg hover:bg-slate-700 transition-colors flex items-center justify-center shadow-md" title="Cerrar Sesión"><i class="fas fa-sign-out-alt"></i></button>
+                    </div>
+                </div>
+            </header>
+
+            <!-- Scrollable Main Content Area -->
+            <main class="flex-1 overflow-y-auto p-4 md:p-8">
+                 <div id="tab-content-wrapper">
+                    <div id="tab-content">
+                        <!-- Content will be rendered by JavaScript -->
+                        <div class="text-center py-10 text-slate-500">
+                            <i class="fas fa-spinner fa-spin fa-3x"></i>
+                            <p class="mt-4">Cargando datos...</p>
+                        </div>
+                    </div>
+                 </div>
+                 <footer class="text-center p-4 text-slate-500 text-sm mt-8">
+                    JGM Studios © 2025. Todos los derechos reservados.
+                </footer>
+            </main>
+        </div>
+    </div>
+    
+    <!-- Hidden input for file uploads -->
+    <input type="file" id="upload-csv-input" class="hidden" accept=".csv">
+
+    <!-- Horus Date App Container -->
+    <div id="horus-date-container" class="hidden w-full h-screen relative">
+         <button id="backToLandingFromHorus" class="absolute top-5 left-5 z-20 bg-white/20 text-white rounded-full w-10 h-10 flex items-center justify-center hover:bg-white/30 transition"><i class="fas fa-arrow-left"></i></button>
+        <div id="horus-date-react-root" class="h-full w-full"></div>
+    </div>
+
+     <!-- App Welcome Template for other apps -->
+    <div id="app-welcome" class="hidden flex-col items-center justify-center text-white text-center p-8 animated-gradient">
+        <button id="backToLandingFromWelcome" class="absolute top-5 left-5 text-white bg-white/20 rounded-full w-10 h-10 flex items-center justify-center hover:bg-white/30 transition">
+            <i class="fas fa-arrow-left"></i>
+        </button>
+        <div class="max-w-xl mx-auto mt-20">
+            <div id="appWelcomeIcon" class="mb-6 w-24 h-24 mx-auto flex items-center justify-center [&>svg]:w-full [&>svg]:h-full"></div>
+            <h1 id="appWelcomeTitle" class="text-5xl font-bold mb-2"></h1>
+            <p id="appWelcomeDesc" class="text-indigo-200 text-lg"></p>
+        </div>
+    </div>
+    
+    <!-- MODALS SECTION for NemeSync Stock -->
+    <div id="stockModal" class="modal fixed inset-0 z-50 bg-black bg-opacity-50 hidden opacity-0 flex items-center justify-center p-4"><div class="transform scale-95 bg-white rounded-xl shadow-2xl w-full max-w-lg p-6 transition-all"><h3 id="stockModalTitle" class="text-xl font-bold text-slate-800 mb-4"></h3><form id="stockForm"><input type="hidden" id="stockDocId"><div class="grid grid-cols-1 md:grid-cols-2 gap-4"><input type="text" id="stockCode" placeholder="Código" required class="w-full p-2 border rounded-lg"><input type="text" id="stockCategory" list="category-list" placeholder="Categoría" required class="w-full p-2 border rounded-lg"><datalist id="category-list"></datalist><input type="text" id="stockProduct" placeholder="Nombre del Producto" required class="md:col-span-2 w-full p-2 border rounded-lg"><input type="text" id="stockUnit" list="unit-list" placeholder="Unidad de Medida (U/M)" required class="w-full p-2 border rounded-lg"><datalist id="unit-list"></datalist><input type="number" id="stockQuantity" min="0" placeholder="Cantidad Inicial" required class="w-full p-2 border rounded-lg"></div><div class="flex justify-end gap-3 mt-6"><button type="button" class="cancel-modal-btn bg-slate-200 text-slate-800 px-4 py-2 rounded-lg font-semibold">Cancelar</button><button type="submit" id="saveStockBtn" class="bg-indigo-600 text-white px-4 py-2 rounded-lg font-semibold">Guardar</button></div></form></div></div>
+    <div id="entryModal" class="modal fixed inset-0 z-50 bg-black bg-opacity-50 hidden opacity-0 flex items-center justify-center p-4"><div class="transform scale-95 bg-white rounded-xl shadow-2xl w-full max-w-lg p-6 transition-all"><h3 class="text-xl font-bold text-slate-800 mb-4">Registrar Entrada</h3><form id="entryForm"><div class="space-y-4"><input type="date" id="entryDate" required class="w-full p-2 border rounded-lg"><div class="relative"><input type="text" id="entryProduct" placeholder="Buscar producto por nombre o código..." autocomplete="off" class="w-full p-2 border rounded-lg"><div id="entryProductSuggestions" class="absolute z-10 w-full bg-white border rounded-lg mt-1 max-h-60 overflow-y-auto hidden"></div></div><input type="number" id="entryQuantity" min="1" placeholder="Cantidad" required class="w-full p-2 border rounded-lg"></div><div class="flex justify-end gap-3 mt-6"><button type="button" class="cancel-modal-btn bg-slate-200 text-slate-800 px-4 py-2 rounded-lg font-semibold">Cancelar</button><button type="submit" class="bg-green-600 text-white px-4 py-2 rounded-lg font-semibold">Registrar</button></div></form></div></div>
+    <div id="exitModal" class="modal fixed inset-0 z-50 bg-black bg-opacity-50 hidden opacity-0 flex items-center justify-center p-4"><div class="transform scale-95 bg-white rounded-xl shadow-2xl w-full max-w-lg p-6 transition-all"><h3 class="text-xl font-bold text-slate-800 mb-4">Registrar Salida</h3><form id="exitForm"><div class="space-y-4"><input type="date" id="exitDate" required class="w-full p-2 border rounded-lg"><select id="exitProductSelect" required class="w-full p-2 border rounded-lg bg-white"></select><div class="grid grid-cols-2 gap-4 items-center"><input type="number" id="exitQuantity" min="0" placeholder="Cantidad" class="w-full p-2 border rounded-lg"><input type="text" id="exitQuantity2" placeholder="Ej: 5*2+3" title="Puede usar cálculos simples" class="w-full p-2 border rounded-lg text-center"></div><div class="text-center font-bold text-xl text-slate-700">Total a retirar: <span id="exitTotalDisplay" class="text-red-600">0</span></div></div><div class="flex justify-end gap-3 mt-6"><button type="button" class="cancel-modal-btn bg-slate-200 text-slate-800 px-4 py-2 rounded-lg font-semibold">Cancelar</button><button type="submit" class="bg-red-600 text-white px-4 py-2 rounded-lg font-semibold">Registrar</button></div></form></div></div>
+    <div id="pasteModal" class="modal fixed inset-0 z-50 bg-black bg-opacity-50 hidden opacity-0 flex items-center justify-center p-4"><div class="transform scale-95 bg-white rounded-xl shadow-2xl w-full max-w-2xl p-6 transition-all"><h3 class="text-xl font-bold text-slate-800 mb-4">Pegar Datos</h3><p class="text-sm text-slate-500 mb-4">Copie (CODIGO, CATEGORIA, PRODUCTO, U/M, INICIAL) y péguelos aquí.</p><textarea id="pasteData" rows="10" class="w-full p-2 border rounded-lg font-mono text-sm"></textarea><div class="flex justify-end gap-3 mt-6"><button type="button" class="cancel-modal-btn bg-slate-200 text-slate-800 px-4 py-2 rounded-lg font-semibold">Cancelar</button><button type="button" id="processPasteBtn" class="bg-blue-600 text-white px-4 py-2 rounded-lg font-semibold">Procesar</button></div></div></div>
+    <div id="saveMonthModal" class="modal fixed inset-0 z-50 bg-black bg-opacity-50 hidden opacity-0 flex items-center justify-center p-4"><div class="transform scale-95 bg-white rounded-xl shadow-2xl w-full max-w-sm p-6 transition-all"><h3 class="text-xl font-bold text-slate-800 mb-4">Archivar Mes</h3><p class="text-sm text-slate-500 mb-4">Seleccione mes y año a cerrar. Esto guardará un reporte y reiniciará el inventario.</p><div class="flex gap-4"><select id="saveMonthSelect" class="w-full p-2 border rounded-lg bg-white"></select><input type="number" id="saveYearInput" class="w-full p-2 border rounded-lg"></div><div class="flex justify-end gap-3 mt-6"><button type="button" class="cancel-modal-btn bg-slate-200 text-slate-800 px-4 py-2 rounded-lg font-semibold">Cancelar</button><button type="button" id="archiveAndFinalizeBtn" class="bg-indigo-600 text-white px-4 py-2 rounded-lg font-semibold">Archivar</button></div></div></div>
+    <div id="confirmModal" class="modal fixed inset-0 z-50 bg-black bg-opacity-50 hidden opacity-0 flex items-center justify-center p-4"><div class="transform scale-95 bg-white rounded-xl shadow-2xl w-full max-w-sm p-8 transition-all text-center"><div id="confirmModalIcon" class="mb-4"></div><h3 id="confirmModalTitle" class="text-xl font-bold text-slate-800 mb-2"></h3><p id="confirmModalMessage" class="text-slate-600 mb-6"></p><div id="confirmModalButtons" class="flex justify-center gap-4"><button id="confirmCancelBtn" class="bg-slate-200 text-slate-800 px-6 py-2 rounded-lg font-semibold">Cancelar</button><button id="confirmAcceptBtn" class="bg-red-600 text-white px-6 py-2 rounded-lg font-semibold">Aceptar</button></div></div></div>
+    <div id="archivesListModal" class="modal fixed inset-0 z-50 bg-black bg-opacity-50 hidden opacity-0 flex items-center justify-center p-4"><div class="transform scale-95 bg-white rounded-xl shadow-2xl w-full max-w-lg p-6 transition-all"><div class="flex justify-between items-center mb-4"><h3 class="text-xl font-bold text-slate-800">Inventarios Archivados</h3><button class="cancel-modal-btn text-slate-500 hover:text-slate-800 text-2xl">&times;</button></div><div id="archivesListContainer" class="max-h-96 overflow-y-auto divide-y"></div></div></div>
+    <div id="reportDetailModal" class="modal fixed inset-0 z-50 bg-black bg-opacity-75 hidden opacity-0 flex items-center justify-center p-4"><div class="transform scale-95 bg-slate-50 rounded-xl shadow-2xl w-full max-w-6xl transition-all h-[90vh] flex flex-col"><div class="flex justify-between items-center p-4 border-b"><h3 id="reportDetailTitle" class="text-xl font-bold text-slate-800"></h3><div class="flex items-center gap-4"><button class="bg-green-600 text-white font-bold py-2 px-3 rounded-lg text-sm hover:bg-green-700" data-action="export-report"><i class="fas fa-file-excel mr-1"></i> Exportar</button><button class="cancel-modal-btn text-slate-500 hover:text-slate-800 text-3xl">&times;</button></div></div><div id="reportDetailContent" class="p-6 overflow-y-auto"></div><div class="flex justify-end gap-4 p-4 mt-auto border-t"><button class="cancel-modal-btn bg-slate-200 text-slate-800 px-4 py-2 rounded-lg font-semibold hover:bg-slate-300">Cerrar</button></div></div></div>
+    
+    <!-- Main App Logic -->
+    <script type="module">
+        // Import Firebase SDKs
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+        import { getAuth, onAuthStateChanged, signInWithEmailAndPassword, signOut } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+        import { getFirestore, collection, doc, setDoc, updateDoc, deleteDoc, onSnapshot, writeBatch, getDocs, query } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+
+        // --- Firebase configuration ---
+        const firebaseConfig = {
+            apiKey: "AIzaSyDRAPx_THFmyDNagZgVuhtWhUZdB8LHKLE",
+            authDomain: "databasejgm-900ec.firebaseapp.com",
+            projectId: "databasejgm-900ec",
+            storageBucket: "databasejgm-900ec.firebasestorage.app",
+            messagingSenderId: "385826567780",
+            appId: "1:385826567780:web:89b41e6aa2b1a6a78e5171",
+            measurementId: "G-JFYRC53F07"
+        };
+
+        // Initialize Firebase
+        const firebaseApp = initializeApp(firebaseConfig);
+        const auth = getAuth(firebaseApp);
+        const db = getFirestore(firebaseApp);
+
+        // --- GLOBAL APP STATE & DOM Elements ---
+        let currentUser = null;
+        let targetApp = null;
+        let horusDateRoot = null;
+        let allInitial = [], allEntries = [], allExits = [], monthlyReports = [], currentStock = [];
+        let currentTab = 'stock', selectedProductForEntry = null, currentReportData = null;
+        let kpiChart = null, categoryChart = null, movementsChart = null;
+        let confirmCallback = null;
+        let unsubInitial, unsubEntries, unsubExits, unsubReports;
+        
+        const landingScreen = document.getElementById('landing-screen');
+        const loginScreen = document.getElementById('login-screen');
+        const appContainer = document.getElementById('app');
+        const welcomeScreen = document.getElementById('app-welcome');
+        const horusDateContainer = document.getElementById('horus-date-container');
+        const allScreens = [landingScreen, loginScreen, appContainer, welcomeScreen, horusDateContainer];
+
+        // --- CORE UI FUNCTIONS ---
+        function showScreen(screenToShow) { allScreens.forEach(s=>s.classList.add('hidden')); screenToShow?.classList.remove('hidden'); const isFlex = ['landing-screen','login-screen', 'app-welcome'].includes(screenToShow.id); const isApp = screenToShow.id==='app'; screenToShow.classList.toggle('flex',isFlex||isApp);};
+        function toggleModal(modal, show) {if(!modal)return;const t=modal.querySelector('.transform');if(show){modal.classList.remove('hidden');modal.classList.add('flex');setTimeout(()=>{modal.classList.remove('opacity-0');t?.classList.remove('scale-95')},10)}else{modal.classList.add('opacity-0');t?.classList.add('scale-95');setTimeout(()=>{modal.classList.add('hidden');modal.classList.remove('flex')},300)}};
+        function showNotification({title,message,isError=false,duration=3000}){const m=document.getElementById('confirmModal');if(!m)return;document.getElementById('confirmModalTitle').textContent=title;document.getElementById('confirmModalMessage').textContent=message;document.getElementById('confirmModalIcon').innerHTML=isError?`<i class="fas fa-times-circle fa-3x text-red-500"></i>`:`<i class="fas fa-check-circle fa-3x text-green-500"></i>`;document.getElementById('confirmModalButtons').style.display='none';toggleModal(m,true);setTimeout(()=>{toggleModal(m,false);setTimeout(()=>document.getElementById('confirmModalButtons').style.display='flex',300)},duration)};
+        window.showConfirmModal = function({title,message,onConfirm}){const m=document.getElementById('confirmModal');if(!m)return;document.getElementById('confirmModalTitle').textContent=title;document.getElementById('confirmModalMessage').textContent=message;document.getElementById('confirmModalIcon').innerHTML=`<i class="fas fa-exclamation-triangle fa-3x text-yellow-500"></i>`;document.getElementById('confirmModalButtons').style.display='flex';confirmCallback=onConfirm;toggleModal(m,true)};
+        
+        // --- APP ROUTING & AUTH ---
+        function showWelcomeApp({ iconHTML, title, desc }) {
+            document.getElementById('appWelcomeIcon').innerHTML = iconHTML;
+            document.getElementById('appWelcomeTitle').textContent = title;
+            document.getElementById('appWelcomeDesc').textContent = desc;
+            showScreen(welcomeScreen);
+        };
+
+        function showLoginScreenFor(appName){const i=document.getElementById('loginIconWrapper'),t=document.getElementById('loginTitle');i.className='icon-wrapper mb-4';targetApp=appName;if(appName==='horus'){i.innerHTML=document.querySelector('#goToAppointmentsBtn .icon-wrapper').innerHTML;i.classList.add('horus-eye-wrapper');t.textContent='Horus Date'}else{i.innerHTML=document.querySelector('#goToInventoryBtn .icon-wrapper').innerHTML;i.classList.add('anubis-scales-wrapper');t.textContent='NemeSync Stock'}showScreen(loginScreen)};
+        function routeToApp(appName,user){currentUser=user;localStorage.setItem('lastApp',appName);if(appName==='horus'){showScreen(horusDateContainer);if(!horusDateRoot){horusDateRoot=ReactDOM.createRoot(document.getElementById('horus-date-react-root'))}horusDateRoot.render(React.createElement(window.HorusDateApp,{db,auth,collection,doc,setDoc,deleteDoc,onSnapshot,updateDoc}))}else{showScreen(appContainer);initializeAppState()}};
+        function handleLogout(){signOut(auth);localStorage.removeItem('lastApp');targetApp=null};
+        
+        // --- NEMESYNC STOCK: DATA & STATE ---
+        function calculateCurrentStock(){const stockMap=new Map();allInitial.forEach(i=>{stockMap.set(i.code,{...i,quantity:Number(i.quantity)||0})});allEntries.forEach(e=>{if(stockMap.has(e.code)){stockMap.get(e.code).quantity+=Number(e.quantity)||0}});allExits.forEach(e=>{if(stockMap.has(e.code)){stockMap.get(e.code).quantity-=Number(e.quantity)||0}});currentStock=Array.from(stockMap.values())};
+        function calculateFinalInventory(){const invMap=new Map();allInitial.forEach(i=>{invMap.set(i.code,{...i,initial:Number(i.quantity)||0,entries:0,exits:0})});allEntries.forEach(e=>{if(invMap.has(e.code)){invMap.get(e.code).entries+=Number(e.quantity)}});allExits.forEach(e=>{if(invMap.has(e.code)){invMap.get(e.code).exits+=Number(e.quantity)}});return Array.from(invMap.values()).map(i=>({...i,final:i.initial+i.entries-i.exits}))};
+        function calculateAndRenderAll(){calculateCurrentStock();updateExitModalProductList();renderCurrentTab()};
+        function cleanupListeners(){if(unsubInitial)unsubInitial();if(unsubEntries)unsubEntries();if(unsubExits)unsubExits();if(unsubReports)unsubReports()};
+        function initializeAppState(){if(!currentUser||unsubInitial)return;const onDataChange=(snap,arr,sortFn=null)=>{arr.length=0;snap.docs.forEach(d=>arr.push({id:d.id,...d.data()}));if(sortFn)arr.sort(sortFn);calculateAndRenderAll()};const initialSort=(a,b)=>a.code.localeCompare(b.code,void 0,{numeric:true});unsubInitial=onSnapshot(collection(db,"users",currentUser.uid,"initial_inventory"),s=>onDataChange(s,allInitial,initialSort));unsubEntries=onSnapshot(collection(db,"users",currentUser.uid,"entries"),s=>onDataChange(s,allEntries));unsubExits=onSnapshot(collection(db,"users",currentUser.uid,"exits"),s=>onDataChange(s,allExits));unsubReports=onSnapshot(query(collection(db,"users",currentUser.uid,"monthly_reports")),s=>onDataChange(s,monthlyReports))};
+        
+        // --- NEMESYNC STOCK: RENDERING ---
+        function renderTable(title,headers,data,rowTmpl,opts={}){
+            const tableContainerClass = opts.constrainHeight ? 'max-h-[60vh] overflow-y-auto' : 'overflow-x-auto';
+            const h=headers.map(h=>`<th class="px-6 py-3 text-left text-xs font-bold text-slate-500 uppercase">${h}</th>`).join('');
+            const r=data.map(i=>`<tr class="hover:bg-slate-50 even:bg-white">${rowTmpl(i).replace(/<td>/g,'<td class="px-6 py-4 whitespace-nowrap text-sm text-slate-600">')}</tr>`).join('');
+            const btns=opts.showImportExport?`<button data-action="download-template" class="bg-slate-600 text-white font-bold py-2 px-3 rounded-lg text-sm hover:bg-slate-700"><i class="fas fa-download mr-1"></i> Plantilla</button><button data-action="upload-template" class="bg-green-600 text-white font-bold py-2 px-3 rounded-lg text-sm hover:bg-green-700"><i class="fas fa-upload mr-1"></i> Cargar</button><button data-action="paste-template" class="bg-blue-600 text-white font-bold py-2 px-3 rounded-lg text-sm hover:bg-blue-700"><i class="fas fa-paste mr-1"></i> Pegar</button>`:'';
+            const headBtns=`<div class="flex flex-wrap justify-between items-center mb-4 gap-4"><h2 class="text-xl font-semibold text-slate-800">${title}</h2><div class="flex flex-wrap gap-2">${btns}${opts.showAdd?`<button data-action="add-stock" class="bg-indigo-500 text-white font-bold py-2 px-3 rounded-lg text-sm hover:bg-indigo-600"><i class="fas fa-plus mr-1"></i> Añadir</button>`:''}${opts.showClear?`<button data-action="clear-collection" data-collection="${opts.collectionId}" data-name="${opts.collectionName}" class="text-sm text-red-500 hover:text-red-700 font-semibold"><i class="fas fa-eraser mr-1"></i> Limpiar</button>`:''}</div></div>`;
+            const search=opts.showSearch?`<div class="relative mb-4"><input type="search" data-table-search class="w-full pl-10 pr-4 py-2 border rounded-lg" placeholder="Buscar..."><i class="fas fa-search absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"></i></div>`:'';
+            const tc=document.getElementById('tab-content');
+            if(tc){
+                 tc.innerHTML=`<div class="bg-white p-6 rounded-xl shadow-md">${headBtns}${search}<div class="border border-slate-200 rounded-lg ${tableContainerClass}"><table class="min-w-full divide-y divide-slate-200"><thead class="bg-slate-50 sticky top-0 z-10"><tr>${h}</tr></thead><tbody class="bg-white divide-y divide-slate-200">${r||`<tr><td colspan="${headers.length}" class="text-center py-10 text-slate-500">No hay datos.</td></tr>`}</tbody></table></div></div>`
+            };
+            const si=document.querySelector('[data-table-search]');
+            if(si){si.addEventListener('input',e=>{const st=e.target.value.toLowerCase();document.querySelectorAll('#tab-content tbody tr').forEach(row=>{row.style.display=row.textContent.toLowerCase().includes(st)?'':'none'})})}
+        }
+        
+        function renderAnnualReport() {
+            const tabContent = document.getElementById('tab-content');
+            if(!tabContent) return;
+
+            const uniqueYears = [...new Set(monthlyReports.map(r => r.year))].sort((a, b) => b - a);
+            const currentYear = new Date().getFullYear();
+
+            tabContent.innerHTML = `
+                <div class="space-y-6">
+                    <div class="flex flex-wrap items-center justify-between gap-4">
+                        <h2 class="text-2xl font-bold text-slate-800">Dashboard de Inventario</h2>
+                        <div class="flex items-center gap-4">
+                            <select id="reportYear" class="p-2 border border-slate-300 rounded-lg bg-white shadow-sm">
+                                ${uniqueYears.map(y => `<option value="${y}" ${y == currentYear ? 'selected' : ''}>${y}</option>`).join('')}
+                            </select>
+                            <select id="reportMonth" class="p-2 border border-slate-300 rounded-lg bg-white shadow-sm">
+                                <option value="all">Todo el Año</option>
+                                ${["Enero","Febrero","Marzo","Abril","Mayo","Junio","Julio","Agosto","Septiembre","Octubre","Noviembre","Diciembre"].map((m, i) => `<option value="${i+1}">${m}</option>`).join('')}
+                            </select>
+                        </div>
+                    </div>
+
+                    <!-- KPI Cards -->
+                    <div id="kpi-cards" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6"></div>
+
+                    <!-- Charts -->
+                    <div class="grid grid-cols-1 lg:grid-cols-5 gap-6">
+                        <div class="lg:col-span-3 bg-slate-50 p-4 rounded-xl shadow flex flex-col">
+                            <h3 class="font-semibold mb-2 text-slate-700 flex-shrink-0">Movimientos Mensuales (Entradas/Salidas)</h3>
+                             <div class="relative h-80">
+                                <canvas id="movementsChart"></canvas>
+                            </div>
+                        </div>
+                        <div class="lg:col-span-2 bg-slate-50 p-4 rounded-xl shadow flex flex-col">
+                            <h3 class="font-semibold mb-2 text-slate-700 flex-shrink-0">Distribución de Stock por Categoría</h3>
+                            <div class="relative h-80">
+                                <canvas id="categoryChart"></canvas>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `;
+            
+            const updateDashboard = () => {
+                const year = document.getElementById('reportYear').value;
+                const month = document.getElementById('reportMonth').value;
+
+                // --- Filter data based on selections ---
+                const reportsForYear = monthlyReports.filter(r => r.year == year);
+                let entriesForPeriod = allEntries.filter(e => e.date.startsWith(year));
+                let exitsForPeriod = allExits.filter(ex => ex.date.startsWith(year));
+
+                if (month !== 'all') {
+                    const monthPadded = String(month).padStart(2, '0');
+                    entriesForPeriod = entriesForPeriod.filter(e => e.date.startsWith(`${year}-${monthPadded}`));
+                    exitsForPeriod = exitsForPeriod.filter(ex => ex.date.startsWith(`${year}-${monthPadded}`));
+                }
+
+                // --- 1. Update KPI Cards ---
+                const kpiContainer = document.getElementById('kpi-cards');
+                const totalStockValue = currentStock.reduce((sum, item) => sum + Number(item.quantity), 0);
+                const totalStock = parseFloat(totalStockValue).toFixed(2);
+                const totalProducts = allInitial.length;
+                const totalEntries = entriesForPeriod.reduce((sum, item) => sum + Number(item.quantity), 0);
+                const totalExits = exitsForPeriod.reduce((sum, item) => sum + Number(item.quantity), 0);
+                
+                const kpis = [
+                    { label: 'Stock Total (U.)', value: totalStock, icon: 'fa-boxes-stacked' },
+                    { label: 'Productos Únicos', value: totalProducts, icon: 'fa-tags' },
+                    { label: 'Total Entradas', value: `+${totalEntries}`, icon: 'fa-arrow-down', color: 'text-green-500' },
+                    { label: 'Total Salidas', value: `-${totalExits}`, icon: 'fa-arrow-up', color: 'text-red-500' }
+                ];
+
+                kpiContainer.innerHTML = kpis.map(kpi => `
+                    <div class="bg-slate-50 p-5 rounded-xl shadow flex items-center gap-4">
+                        <div class="bg-indigo-100 text-indigo-600 rounded-full w-12 h-12 flex items-center justify-center">
+                            <i class="fas ${kpi.icon} fa-lg"></i>
+                        </div>
+                        <div>
+                            <p class="text-slate-500 font-medium text-sm">${kpi.label}</p>
+                            <p class="text-2xl font-bold text-slate-800 ${kpi.color || ''}">${kpi.value}</p>
+                        </div>
+                    </div>
+                `).join('');
+
+                // --- 2. Update Movements Bar Chart ---
+                const movementsCtx = document.getElementById('movementsChart').getContext('2d');
+                if (movementsChart) movementsChart.destroy();
+                const monthlyData = Array(12).fill(0).map(() => ({ entries: 0, exits: 0 }));
+                
+                reportsForYear.forEach(report => {
+                    const monthIndex = report.month - 1;
+                    if(monthIndex >= 0 && monthIndex < 12) {
+                        monthlyData[monthIndex].entries = report.entries.reduce((sum, item) => sum + Number(item.quantity), 0);
+                        monthlyData[monthIndex].exits = report.exits.reduce((sum, item) => sum + Number(item.quantity), 0);
+                    }
+                });
+                
+                movementsChart = new Chart(movementsCtx, {
+                    type: 'bar',
+                    data: {
+                        labels: ["Ene", "Feb", "Mar", "Abr", "May", "Jun", "Jul", "Ago", "Sep", "Oct", "Nov", "Dic"],
+                        datasets: [
+                            { label: 'Entradas', data: monthlyData.map(d => d.entries), backgroundColor: 'rgba(56, 189, 14, 0.6)', borderColor: 'rgba(56, 189, 14, 1)', borderWidth: 1 },
+                            { label: 'Salidas', data: monthlyData.map(d => d.exits), backgroundColor: 'rgba(239, 68, 68, 0.6)', borderColor: 'rgba(239, 68, 68, 1)', borderWidth: 1 }
+                        ]
+                    },
+                    options: { responsive: true, maintainAspectRatio: false, scales: { y: { beginAtZero: true } } }
+                });
+
+                // --- 3. Update Category Doughnut Chart ---
+                const categoryCtx = document.getElementById('categoryChart').getContext('2d');
+                if (categoryChart) categoryChart.destroy();
+                const categoryData = allInitial.reduce((acc, item) => {
+                    acc[item.category] = (acc[item.category] || 0) + (currentStock.find(s => s.code === item.code)?.quantity || 0);
+                    return acc;
+                }, {});
+
+                const categoryLabels = Object.keys(categoryData);
+                const categoryValues = Object.values(categoryData);
+                
+                categoryChart = new Chart(categoryCtx, {
+                    type: 'doughnut',
+                    data: {
+                        labels: categoryLabels,
+                        datasets: [{
+                            data: categoryValues,
+                            backgroundColor: ['#4f46e5', '#7c3aed', '#ec4899', '#f59e0b', '#10b981', '#3b82f6', '#ef4444'],
+                            hoverOffset: 4
+                        }]
+                    },
+                    options: { responsive: true, maintainAspectRatio: false, cutout: '60%' }
+                });
+            };
+
+            document.getElementById('reportYear').addEventListener('change', updateDashboard);
+            document.getElementById('reportMonth').addEventListener('change', updateDashboard);
+            updateDashboard(); // Initial render
+        };
+        
+        function renderCurrentTab(){
+            const tabContentWrapper = document.getElementById('tab-content-wrapper');
+            const tabContent = document.getElementById('tab-content');
+            const constrainedTabs = ['stock', 'initial', 'final'];
+            
+            tabContent.className = ''; 
+            tabContentWrapper.className = ''; 
+            
+            if (currentTab === 'annual_report') {
+                 renderAnnualReport();
+                 return;
+            }
+
+            if (constrainedTabs.includes(currentTab)) {
+                tabContentWrapper.classList.add('max-w-7xl', 'mx-auto');
+            }
+            
+            tabContent.classList.add('bg-white', 'p-6', 'rounded-xl', 'shadow-md');
+
+            const h={s:['Código','Categoría','Producto','U/M','Stock'],m:['Fecha','Código','Producto','Cantidad','Acciones'],i:['Código','Categoría','Producto','U/M','Cant. Inicial','Acciones'],f:['Código','Categoría','Producto','U/M','Inv. Inicial','Entradas','Salidas','Stock Final']};
+            const rt={s:i=>`<td>${i.code}</td><td>${i.category}</td><td>${i.product}</td><td>${i.unit}</td><td class="font-bold">${i.quantity}</td>`,e:i=>`<td>${i.date}</td><td>${i.code}</td><td>${i.product}</td><td class="text-green-600 font-bold">+${i.quantity}</td><td><button data-action="delete-row" data-collection="entries" data-id="${i.id}" class="delete-btn"><i class="fas fa-trash-alt"></i></button></td>`,x:i=>`<td>${i.date}</td><td>${i.code}</td><td>${i.product}</td><td class="text-red-600 font-bold">-${i.quantity}</td><td><button data-action="delete-row" data-collection="exits" data-id="${i.id}" class="delete-btn"><i class="fas fa-trash-alt"></i></button></td>`,i:i=>`<td>${i.code}</td><td>${i.category}</td><td>${i.product}</td><td>${i.unit}</td><td>${i.quantity}</td><td class="flex gap-2"><button data-action="edit-stock" data-id="${i.id}" class="action-btn"><i class="fas fa-pencil-alt"></i></button><button data-action="delete-row" data-collection="initial_inventory" data-id="${i.id}" class="delete-btn"><i class="fas fa-trash-alt"></i></button></td>`,f:i=>`<td>${i.code}</td><td>${i.category}</td><td>${i.product}</td><td>${i.unit}</td><td>${i.initial}</td><td class="text-green-600 font-bold">+${i.entries}</td><td class="text-red-600 font-bold">-${i.exits}</td><td class="font-bold">${i.final}</td>`};
+            
+            const sort=(d,k='code')=>[...d].sort((a,b)=>a[k].localeCompare(b[k],void 0,{numeric:true}));
+            
+            switch(currentTab){
+                case'stock':renderTable('Stock Actual',h.s,sort(currentStock),rt.s,{showSearch:true, constrainHeight: true});break;
+                case'entries':renderTable('Entradas',h.m,[...allEntries].sort((a,b)=>new Date(b.date)-new Date(a.date)),rt.e,{showClear:true,collectionName:"Entradas",collectionId:"entries"});break;
+                case'exits':renderTable('Salidas',h.m,[...allExits].sort((a,b)=>new Date(b.date)-new Date(a.date)),rt.x,{showClear:true,collectionName:"Salidas",collectionId:"exits"});break;
+                case'initial':renderTable('Inventario Inicial',h.i,sort(allInitial),rt.i,{showClear:true,showAdd:true,showImportExport:true,collectionName:"Inventario Inicial",collectionId:"initial_inventory", constrainHeight: true});break;
+                case'final':renderTable('Inventario Final',h.f,sort(calculateFinalInventory()),rt.f,{showSearch:true, constrainHeight: true});break;
+            }
+        };
+
+        function renderDetailTable(title,headers,data,rowTmpl){const h=headers.map(h=>`<th class="px-4 py-2 text-left text-xs font-bold text-slate-500 uppercase">${h}</th>`).join('');const r=data.map(i=>`<tr class="hover:bg-slate-100">${rowTmpl(i).replace(/<td>/g,'<td class="px-4 py-2 whitespace-nowrap text-sm text-slate-600">')}</tr>`).join('');return`<div class="mb-8"><h4 class="text-lg font-semibold text-slate-700 mb-2">${title}</h4><div class="border rounded-lg overflow-x-auto"><table class="min-w-full divide-y"><thead class="bg-slate-100"><tr>${h}</tr></thead><tbody class="bg-white divide-y">${r||`<tr><td colspan="${headers.length}" class="text-center py-5 text-slate-500">No hay datos.</td></tr>`}</tbody></table></div></div>`};
+        function showReportDetail(reportId){currentReportData=monthlyReports.find(r=>r.id===reportId);if(!currentReportData)return showNotification({title:'Error',message:'No se encontró el reporte.',isError:true});const m=document.getElementById('reportDetailModal');document.getElementById('reportDetailTitle').textContent=`Detalle - ${currentReportData.id}`;const c=document.getElementById('reportDetailContent');const h={final:['Código','Categoría','Producto','U/M','Inv. Inicial','Entradas','Salidas','Stock Final'],moves:['Fecha','Código','Producto','Cantidad']};const t={final:i=>`<td>${i.code}</td><td>${i.category}</td><td>${i.product}</td><td>${i.unit}</td><td>${i.initial}</td><td class="text-green-600 font-bold">+${i.entries}</td><td class="text-red-600 font-bold">-${i.exits}</td><td class="font-bold">${i.final}</td>`,entries:i=>`<td>${i.date}</td><td>${i.code}</td><td>${i.product}</td><td class="text-green-600 font-bold">+${i.quantity}</td>`,exits:i=>`<td>${i.date}</td><td>${i.code}</td><td>${i.product}</td><td class="text-red-600 font-bold">-${i.quantity}</td>`};c.innerHTML=`${renderDetailTable('Inventario Final',h.final,currentReportData.finalInventory,t.final)}${renderDetailTable('Entradas del Mes',h.moves,currentReportData.entries,t.entries)}${renderDetailTable('Salidas del Mes',h.moves,currentReportData.exits,t.exits)}`;toggleModal(m,true)};
+        function exportReportToExcel(){if(!currentReportData)return showNotification({title:'Error',message:'No hay datos para exportar.',isError:true});const wb=XLSX.utils.book_new();const finalData=currentReportData.finalInventory.map(i=>({'Código':i.code,'Categoría':i.category,'Producto':i.product,'U/M':i.unit,'Inv. Inicial':i.initial,'Entradas':i.entries,'Salidas':i.exits,'Stock Final':i.final}));const entriesData=currentReportData.entries.map(i=>({'Fecha':i.date,'Código':i.code,'Producto':i.product,'Cantidad':i.quantity}));const exitsData=currentReportData.exits.map(i=>({'Fecha':i.date,'Código':i.code,'Producto':i.product,'Cantidad':i.quantity}));XLSX.utils.book_append_sheet(wb,XLSX.utils.json_to_sheet(finalData),"Inv. Final");XLSX.utils.book_append_sheet(wb,XLSX.utils.json_to_sheet(entriesData),"Entradas");XLSX.utils.book_append_sheet(wb,XLSX.utils.json_to_sheet(exitsData),"Salidas");XLSX.writeFile(wb,`Reporte-${currentReportData.id}.xlsx`)};
+
+        // --- NEMESYNC STOCK: ACTIONS & DATA HANDLING ---
+        function safeCalculate(expr){if(typeof expr!=='string'||!expr.trim())return 0;let s=expr.trim().replace(/x/gi,'*').replace(/[^0-9\.\+\-\*\/]/g,'');if(!s)return 0;const l=s.slice(-1);if(['+','-','*','/'].includes(l)){s=s.slice(0,-1)}if(!s)return 0;try{const r=new Function('return '+s)();return isNaN(r)||!isFinite(r)?0:r}catch(e){return 0}};
+        function openStockModal(docId=null){const f=document.getElementById('stockForm');f.reset();document.getElementById('stockDocId').value='';document.getElementById('category-list').innerHTML=[...new Set(allInitial.map(p=>p.category))].map(c=>`<option value="${c}">`).join('');document.getElementById('unit-list').innerHTML=[...new Set(allInitial.map(p=>p.unit))].map(u=>`<option value="${u}">`).join('');if(docId){const p=allInitial.find(p=>p.id===docId);if(p){document.getElementById('stockModalTitle').textContent='Editar Producto';document.getElementById('stockDocId').value=p.id||'';document.getElementById('stockCode').value=p.code||'';document.getElementById('stockCategory').value=p.category||'';document.getElementById('stockProduct').value=p.product||'';document.getElementById('stockUnit').value=p.unit||'';document.getElementById('stockQuantity').value=p.quantity||0}}else{document.getElementById('stockModalTitle').textContent='Añadir Nuevo Producto';const n=allInitial.map(p=>parseInt(p.code)).filter(n=>!isNaN(n));const next=n.length>0?Math.max(...n)+1:1;document.getElementById('stockCode').value=next}toggleModal(document.getElementById('stockModal'),true)};
+        function updateExitModalProductList(){const s=document.getElementById('exitProductSelect');if(!s)return;const p=[...currentStock].filter(p=>p.quantity>0).sort((a,b)=>a.code.localeCompare(b.code));s.innerHTML='<option value="" disabled selected>Seleccione un producto</option>';p.forEach(i=>{s.innerHTML+=`<option value="${i.code}">${i.product} - ${i.code} (Stock: ${i.quantity})</option>`})};
+        async function processAndSaveProducts(products){if(!currentUser)return;const vP=[],errs=[];for(const r of products){if(Object.values(r).every(v=>typeof v!=='string'||!v.trim()))continue;const c=(r.CODIGO||r.code)?.trim().toUpperCase(),cat=(r.CATEGORIA||r.category)?.trim(),p=(r.PRODUCTO||r.product)?.trim(),u=(r['U/M']||r.unit)?.trim(),q=Number((r.INICIAL||r.quantity)?.toString().trim());if(c&&cat&&p&&u&&!isNaN(q)&&q>=0){vP.push({code:c,category:cat,product:p,unit:u,quantity:q})}else{errs.push(p||`Fila #${products.indexOf(r)+1}`)}}if(errs.length>0){showNotification({title:'Error de Validación',message:`Se ignoraron ${errs.length} filas por datos incompletos.`,isError:true,duration:5000})}if(vP.length>0){const b=writeBatch(db);vP.forEach(p=>{const d=doc(collection(db,"users",currentUser.uid,"initial_inventory"));b.set(d,{...p,id:d.id})});await b.commit();showNotification({title:'Éxito',message:`${vP.length} productos importados.`})}};
+        function handleFileUpload(e){const f=e.target.files[0];if(!f)return;Papa.parse(f,{header:true,skipEmptyLines:true,delimiter:";",complete:r=>{if(r.errors.length>0){showNotification({title:'Error de Lectura',message:'El archivo CSV es incorrecto.',isError:true});return}processAndSaveProducts(r.data)}});e.target.value=''};
+        async function addOrUpdateDoc(coll,data,docId){if(!currentUser)return;const id=docId||doc(collection(db,"users",currentUser.uid,coll)).id;const d=doc(db,"users",currentUser.uid,coll,id);await setDoc(d,{...data,id});return id};
+        async function archiveAndResetMonth(month,year){if(!currentUser)return;const finalInventory=calculateFinalInventory();const reportId=`${year}-${String(month).padStart(2,'0')}`;const reportData={id:reportId,month:month,year:year,createdAt:new Date().toISOString(),initialInventory:[...allInitial],entries:[...allEntries],exits:[...allExits],finalInventory:finalInventory};const batch=writeBatch(db);batch.set(doc(db,"users",currentUser.uid,"monthly_reports",reportId),reportData);const collectionsToDelete=["entries","exits","initial_inventory"];for(const coll of collectionsToDelete){const snapshot=await getDocs(collection(db,"users",currentUser.uid,coll));snapshot.docs.forEach(d=>batch.delete(d.ref))}finalInventory.forEach(item=>{const newInitialDocRef=doc(collection(db,"users",currentUser.uid,"initial_inventory"));const newInitialData={id:newInitialDocRef.id,code:item.code,category:item.category,product:item.product,unit:item.unit,quantity:item.final};batch.set(newInitialDocRef,newInitialData)});try{await batch.commit();toggleModal(document.getElementById('saveMonthModal'),false);showNotification({title:"Mes Archivado",message:`El inventario ha sido cerrado y reiniciado.`})}catch(error){showNotification({title:"Error",message:"No se pudo archivar el mes.",isError:true})}};
+
+        // --- MAIN INITIALIZATION & EVENT LISTENERS ---
+        document.addEventListener('DOMContentLoaded',()=>{
+            // Theme Switcher Logic
+            const themeBtn = document.getElementById('theme-btn');
+            const themes = ['theme-default', 'theme-light', 'theme-dark'];
+            let currentThemeIndex = 0;
+
+            const savedTheme = localStorage.getItem('jgm-apps-theme');
+            if (savedTheme && themes.includes(savedTheme)) {
+                currentThemeIndex = themes.indexOf(savedTheme);
+            }
+            document.body.classList.add(themes[currentThemeIndex]);
+
+            themeBtn.addEventListener('click', () => {
+                document.body.classList.remove(themes[currentThemeIndex]);
+                currentThemeIndex = (currentThemeIndex + 1) % themes.length;
+                const newTheme = themes[currentThemeIndex];
+                document.body.classList.add(newTheme);
+                localStorage.setItem('jgm-apps-theme', newTheme);
+            });
+
+            onAuthStateChanged(auth,user=>{if(user){const lastApp=localStorage.getItem('lastApp');if(targetApp||lastApp){routeToApp(targetApp||lastApp,user)}else{showScreen(landingScreen)}}else{currentUser=null;cleanupListeners();if(horusDateRoot){horusDateRoot.unmount();horusDateRoot=null}showScreen(landingScreen)}});document.getElementById('goToInventoryBtn').addEventListener('click',()=>showLoginScreenFor('nemesync'));document.getElementById('goToAppointmentsBtn').addEventListener('click',()=>showLoginScreenFor('horus'));document.getElementById('backToLandingBtn').addEventListener('click',()=>{targetApp=null;showScreen(landingScreen)});document.getElementById('backToLandingFromWelcome').addEventListener('click', () => showScreen(landingScreen)); document.getElementById('goToMuseIABtn').addEventListener('click', () => showWelcomeApp({ iconHTML: document.querySelector('#goToMuseIABtn .icon-wrapper').innerHTML, title: 'Muse IA', desc: 'Inspiracion de las 9 Musas' })); document.getElementById('goToOdiseaIABtn').addEventListener('click', () => showWelcomeApp({ iconHTML: document.querySelector('#goToOdiseaIABtn .icon-wrapper').innerHTML, title: 'Odisea IA', desc: 'Crea y Viaja Sin Límites' })); document.getElementById('backToLandingFromHorus').addEventListener('click',handleLogout);document.getElementById('loginForm').addEventListener('submit',async e=>{e.preventDefault();const email=document.getElementById('email').value,password=document.getElementById('password').value,errorEl=document.getElementById('loginError');errorEl.classList.add('hidden');try{await signInWithEmailAndPassword(auth,email,password)}catch(error){errorEl.textContent='Email o contraseña incorrectos.';errorEl.classList.remove('hidden')}});document.getElementById('togglePassword').addEventListener('click',e=>{const p=document.getElementById('password'),t=p.getAttribute('type')==='password'?'text':'password';p.setAttribute('type',t);e.currentTarget.querySelector('i').classList.toggle('fa-eye');e.currentTarget.querySelector('i').classList.toggle('fa-eye-slash')});const sidebarNav=document.getElementById('sidebar-nav'),sidebar=document.getElementById('sidebar'),sidebarToggle=document.getElementById('sidebar-toggle');const navItems=[{tab:'stock',icon:'fa-boxes-stacked',text:'Stock Actual'},{tab:'entries',icon:'fa-arrow-down',text:'Entradas'},{tab:'exits',icon:'fa-arrow-up',text:'Salidas'},{tab:'initial',icon:'fa-warehouse',text:'Inv. Inicial'},{tab:'final',icon:'fa-clipboard-check',text:'Inv. Final'},{tab:'annual_report',icon:'fa-chart-line',text:'Reporte Anual'}];sidebarNav.innerHTML=navItems.map(i=>`<a href="#" class="flex items-center space-x-3 text-gray-300 hover:bg-gray-700 hover:text-white px-4 py-3 rounded-lg transition-colors" data-tab="${i.tab}"><i class="fas ${i.icon} w-6 text-lg text-center"></i><span class="font-semibold">${i.text}</span></a>`).join('');sidebarNav.addEventListener('click',e=>{const l=e.target.closest('a[data-tab]');if(l){e.preventDefault();currentTab=l.dataset.tab;document.querySelectorAll('#sidebar-nav a').forEach(a=>a.classList.remove('bg-indigo-600','text-white'));l.classList.add('bg-indigo-600','text-white');renderCurrentTab();if(window.innerWidth<768){sidebar.classList.add('-translate-x-full')}}});sidebarToggle.addEventListener('click',()=>{sidebar.classList.toggle('-translate-x-full')});document.querySelector(`#sidebar-nav a[data-tab="${currentTab}"]`)?.classList.add('bg-indigo-600','text-white');document.getElementById('logoutBtn')?.addEventListener('click',handleLogout);document.getElementById('openEntryModalBtn')?.addEventListener('click',()=>{document.getElementById('entryForm').reset();document.getElementById('entryDate').valueAsDate=new Date();toggleModal(document.getElementById('entryModal'),true)});document.getElementById('openExitModalBtn')?.addEventListener('click',()=>{document.getElementById('exitForm').reset();document.getElementById('exitDate').valueAsDate=new Date();document.getElementById('exitTotalDisplay').textContent='0';toggleModal(document.getElementById('exitModal'),true)});document.getElementById('entryForm').addEventListener('submit',e=>{e.preventDefault();if(!selectedProductForEntry){showNotification({title:"Error",message:"Seleccione un producto.",isError:true});return}const d={date:document.getElementById('entryDate').value,quantity:Number(document.getElementById('entryQuantity').value),code:selectedProductForEntry.code,product:selectedProductForEntry.product,category:selectedProductForEntry.category,unit:selectedProductForEntry.unit};addOrUpdateDoc('entries',d);toggleModal(document.getElementById('entryModal'),false);e.target.reset();selectedProductForEntry=null});document.getElementById('exitForm').addEventListener('submit',e=>{e.preventDefault();const c=document.getElementById('exitProductSelect').value,d=document.getElementById('exitDate').value,q=Number(document.getElementById('exitTotalDisplay').textContent),p=currentStock.find(p=>p.code===c);if(!d||!p||q<=0){showNotification({title:"Error",message:"Seleccione producto y cantidad válida.",isError:true});return}if(q>p.quantity){showNotification({title:"Stock Insuficiente",message:`Solo hay ${p.quantity} en stock.`,isError:true});return}const data={date:d,quantity:q,code:p.code,product:p.product,category:p.category,unit:p.unit};addOrUpdateDoc('exits',data);toggleModal(document.getElementById('exitModal'),false);e.target.reset()});document.getElementById('stockForm').addEventListener('submit',async e=>{e.preventDefault();const id=document.getElementById('stockDocId').value;const d={code:document.getElementById('stockCode').value.trim().toUpperCase(),category:document.getElementById('stockCategory').value.trim(),product:document.getElementById('stockProduct').value.trim(),unit:document.getElementById('stockUnit').value.trim(),quantity:Number(document.getElementById('stockQuantity').value)};if(!d.code||!d.category||!d.product||!d.unit||isNaN(d.quantity)){showNotification({title:"Error",message:"Todos los campos son requeridos.",isError:true});return}try{await addOrUpdateDoc('initial_inventory',d,id||null);toggleModal(document.getElementById('stockModal'),false);showNotification({title:'Éxito',message:`Producto guardado.`})}catch(error){showNotification({title:'Error',message:'No se pudo guardar.',isError:true})}});document.querySelectorAll('.cancel-modal-btn').forEach(b=>{b.addEventListener('click',e=>{const m=e.target.closest('.modal');if(m)toggleModal(m,false)})});document.body.addEventListener('click',e=>{const t=e.target.closest('button[data-action]');if(!t)return;const a=t.dataset.action,id=t.dataset.id;switch(a){case'add-stock':openStockModal();break;case'edit-stock':openStockModal(id);break;case'delete-row':window.showConfirmModal({title:'¿Eliminar Registro?',message:'Esta acción es irreversible.',onConfirm:()=>deleteDoc(doc(db,"users",currentUser.uid,t.dataset.collection,id))});break;case'clear-collection':window.showConfirmModal({title:`¿Limpiar ${t.dataset.name}?`,message:`Se borrarán TODOS los registros. Esta acción es irreversible.`,onConfirm:async()=>{const c=collection(db,"users",currentUser.uid,t.dataset.collection);const s=await getDocs(c);const b=writeBatch(db);s.docs.forEach(d=>b.delete(d.ref));await b.commit();showNotification({title:"Éxito",message:`Datos de ${t.dataset.name} borrados.`})}});break;case'download-template':const h="CODIGO;CATEGORIA;PRODUCTO;U/M;INICIAL";const b=new Blob(["\uFEFF"+h],{type:'text/csv;charset=utf-8;'});const l=document.createElement("a");l.href=URL.createObjectURL(b);l.download="plantilla_inventario.csv";l.click();URL.revokeObjectURL(l.href);break;case'upload-template':document.getElementById('upload-csv-input').click();break;case'paste-template':toggleModal(document.getElementById('pasteModal'),true);break;case'view-report':showReportDetail(id);break;case'export-report':exportReportToExcel();break}});document.getElementById('upload-csv-input').addEventListener('change',handleFileUpload);document.getElementById('processPasteBtn').addEventListener('click',()=>{const d=document.getElementById('pasteData').value;if(!d.trim()){showNotification({title:'Error',message:'El área de texto está vacía.',isError:true});return}Papa.parse(d,{header:true,skipEmptyLines:true,complete:r=>{if(r.errors.length>0){showNotification({title:'Error de Parseo',message:'Formato incorrecto.',isError:true});return}processAndSaveProducts(r.data);toggleModal(document.getElementById('pasteModal'),false)}})});document.getElementById('confirmAcceptBtn').addEventListener('click',()=>{if(confirmCallback)confirmCallback();toggleModal(document.getElementById('confirmModal'),false);confirmCallback=null});document.getElementById('confirmCancelBtn').addEventListener('click',()=>{toggleModal(document.getElementById('confirmModal'),false);confirmCallback=null});document.getElementById('entryProduct').addEventListener('input',e=>{const s=e.target.value.toLowerCase(),c=document.getElementById('entryProductSuggestions');selectedProductForEntry=null;if(s.length<1){c.classList.add('hidden');return}const sug=[...allInitial].filter(i=>i.product.toLowerCase().includes(s)||i.code.toLowerCase().includes(s)).sort((a,b)=>a.code.localeCompare(b.code));if(sug.length>0){c.innerHTML=sug.map(i=>`<div class="p-3 hover:bg-indigo-100 cursor-pointer" data-product-id="${i.id}">${i.product} <span class="text-xs text-gray-500">(${i.code})</span></div>`).join('');c.classList.remove('hidden')}else{c.classList.add('hidden')}});document.getElementById('entryProductSuggestions').addEventListener('click',e=>{const t=e.target.closest('[data-product-id]');if(t){selectedProductForEntry=allInitial.find(p=>p.id===t.dataset.productId);if(selectedProductForEntry){document.getElementById('entryProduct').value=selectedProductForEntry.product}document.getElementById('entryProductSuggestions').classList.add('hidden')}});const updateTotal=()=>{const q1=Number(document.getElementById('exitQuantity').value)||0,q2=safeCalculate(document.getElementById('exitQuantity2').value||'0');document.getElementById('exitTotalDisplay').textContent=q1+q2};document.getElementById('exitQuantity').addEventListener('input',updateTotal);document.getElementById('exitQuantity2').addEventListener('input',updateTotal);document.getElementById('openSaveMonthModalBtn').addEventListener('click',()=>{const m=document.getElementById('saveMonthSelect'),y=document.getElementById('saveYearInput'),meses=["Enero","Febrero","Marzo","Abril","Mayo","Junio","Julio","Agosto","Septiembre","Octubre","Noviembre","Diciembre"];if(m.children.length===0){m.innerHTML=meses.map((mes,i)=>`<option value="${i+1}">${mes}</option>`).join('')}const n=new Date();m.value=n.getMonth()+1;y.value=n.getFullYear();toggleModal(document.getElementById('saveMonthModal'),true)});document.getElementById('archiveAndFinalizeBtn').addEventListener('click',()=>{const m=document.getElementById('saveMonthSelect').value,y=document.getElementById('saveYearInput').value,n=document.querySelector('#saveMonthSelect option:checked').textContent;showConfirmModal({title:'¿Archivar y Reiniciar?',message:`Está a punto de cerrar ${n} de ${y}. Esta acción es irreversible.`,onConfirm:()=>archiveAndResetMonth(m,y)})});
+        
+        document.getElementById('openArchivesListBtn').addEventListener("click",()=>{
+            const container=document.getElementById("archivesListContainer");
+            const modal=document.getElementById("archivesListModal");
+            if(!monthlyReports||monthlyReports.length===0){
+                container.innerHTML='<p class="text-center text-slate-500 py-6">No hay archivos.</p>'
+            } else {
+                const sorted=[...monthlyReports].sort((a,b)=>new Date(b.createdAt)-new Date(a.createdAt));
+                container.innerHTML = sorted.map(r => {
+                    const [year, month] = r.id.split('-');
+                    const monthNames = ["Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio", "Julio", "Agosto", "Septiembre", "Octubre", "Noviembre", "Diciembre"];
+                    const formattedDate = `${monthNames[parseInt(month) - 1]} ${year}`;
+                    return `
+                        <div class="py-3 px-2 flex justify-between items-center hover:bg-slate-50">
+                            <div>
+                                <strong class="text-indigo-600">${formattedDate}</strong>
+                                <br>
+                                <small class="text-slate-500">Archivado: ${new Date(r.createdAt).toLocaleString()}</small>
+                            </div>
+                            <button class="bg-indigo-500 text-white px-3 py-1 rounded text-sm font-semibold" data-action="view-report" data-id="${r.id}">Ver</button>
+                        </div>
+                    `;
+                }).join('');
+            }
+            toggleModal(modal,true)
+        });
+    });
+    </script>
+
+    <!-- Horus Date React App -->
+    <script type="text/babel">
+        const { useState, useEffect, useMemo, useCallback } = React;
+
+        // --- Constants & Types ---
+        const packageDetails = {
+            'Pack 1': '7 Digitales', 'Pack 2': '10 Digitales', 'Pack 3': '15 Digitales',
+            'Pack 4': '24 Digitales', 'Pack 5': '36 Digitales',
+        };
+
+        const iconPaths = {
+            package: `<path d="M16.5 9.4a4.5 4.5 0 1 1-9 0 4.5 4.5 0 0 1 9 0Z"/><path d="M19 12.2l-7-4-7 4"/><path d="M19 16.2l-7-4-7 4"/><path d="m12 22 7-4-7-4-7 4 7 4Z"/>`,
+            palette: `<circle cx="13.5" cy="6.5" r=".5" fill="currentColor"/><circle cx="17.5" cy="10.5" r=".5" fill="currentColor"/><path d="M2 16.5A4.5 4.5 0 0 1 6.5 12H8c2.5 0 4.5-2.5 4.5-5.5a4.5 4.5 0 1 1 3.5 8.5L2 22Z"/>`,
+            layers: `<polygon points="12 2 2 7 12 12 22 7 12 2"/><polygon points="2 17 12 22 22 17"/><polygon points="2 12 12 17 22 12"/>`,
+            droplets: `<path d="M12 22a7 7 0 0 0 7-7c0-2-1-3.9-3-5.5s-3.5-4-3.5-4-1.5 2.5-3.5 4-3 3.5-3 5.5a7 7 0 0 0 7 7z"/>`,
+            gift: `<rect x="3" y="8" width="18" height="4" rx="1"/><path d="M12 8v13"/><path d="M19 12v7a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2v-7"/><path d="M7.5 8a2.5 2.5 0 0 1 0-5A4.8 8 0 0 1 12 5a4.8 8 0 0 1 4.5-2 2.5 2.5 0 0 1 0 5"/>`,
+        };
+
+        const INITIAL_FORM_STATE = {
+            client: '', service: 'Cumpleaños Glamorous', time: '10:30am',
+            date: new Date().toISOString().split('T')[0], packageNo: 'Pack 1',
+            balloonColor: '', birthdayNo: '', price: '', advance: '',
+            backgroundCount: '1', backgroundColor1: 'Blanco', backgroundColor2: 'Blanco',
+        };
+
+
+        // --- Utility Function: PNG Invoice Generation ---
+        const downloadInvoiceAsPNG = (app) => {
+            const { client, service, packageNo, price, advance, date, time, balloonColor, birthdayNo, backgroundColor1, backgroundColor2, backgroundCount } = app;
+            const balance = (parseFloat(price || 0) - parseFloat(advance || 0)).toFixed(2);
+            const fullDateText = new Date(date + 'T00:00:00').toLocaleDateString('es-ES', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
+
+            const details = [
+                { icon: iconPaths.package, text: `${packageNo} (${packageDetails[packageNo]})`, condition: true },
+                { icon: iconPaths.palette, text: `Fondo 1: ${backgroundColor1}`, condition: true },
+                { icon: iconPaths.layers, text: `Fondo 2: ${backgroundColor2}`, condition: backgroundCount === '2' },
+                { icon: iconPaths.droplets, text: `Globos: ${balloonColor}`, condition: balloonColor && balloonColor !== 'N/U' },
+                { icon: iconPaths.gift, text: `Cumple: ${birthdayNo}`, condition: birthdayNo && birthdayNo !== 'N/U' },
+            ].filter(item => item.condition);
+
+            let detailY = 350;
+            const detailItemsSVG = details.map(item => {
+                const svg = `<g transform="translate(40, ${detailY - 12})">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#d1d5db" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">${item.icon}</svg>
+                                </g>
+                                <text x="65" y="${detailY}" font-family="sans-serif" font-size="12" fill="#d1d5db">${item.text}</text>`;
+                detailY += 25;
+                return svg;
+            }).join('');
+
+            const dynamicDetailsHeight = detailY - 325;
+            const totalHeight = 440 + dynamicDetailsHeight;
+
+            const svgString = `
+                <svg width="500" height="${totalHeight}" xmlns="http://www.w3.org/2000/svg">
+                    <defs>
+                        <linearGradient id="grad" x1="0%" y1="0%" x2="100%" y2="0%">
+                            <stop offset="0%" style="stop-color:#a855f7;" />
+                            <stop offset="100%" style="stop-color:#ec4899;" />
+                        </linearGradient>
+                    </defs>
+                    <style>.sans-serif { font-family: sans-serif; }</style>
+                    <rect width="100%" height="100%" fill="#1f2937"/>
+                    <text x="20" y="75" class="sans-serif" font-size="52" font-weight="bold" fill="url(#grad)">RECIBO</text>
+                    <text x="20" y="95" class="sans-serif" font-size="16" font-weight="bold" fill="#ffffff">JGM Studios ©</text>
+                    <text x="20" y="130" class="sans-serif" font-size="12" fill="#d1d5db">Director Creativo: Jhoandri Gómez</text>
+                    <text x="20" y="150" class="sans-serif" font-size="12" fill="#d1d5db">Cel.: 84521372 | Web: www.jgmstudiosnic.com</text>
+                    <text x="20" y="170" class="sans-serif" font-size="12" fill="#d1d5db">Dirección: Del Rótulo de la Gasolinera Uno (Star Mark) 20 Vrs. Al Este</text>
+                    <line x1="20" y1="190" x2="480" y2="190" stroke="#4b5563" />
+                    <text x="20" y="215" class="sans-serif" font-size="12" fill="#9ca3af">CLIENTE</text>
+                    <text x="20" y="235" class="sans-serif" font-size="18" fill="#e5e7eb" font-weight="bold">${client}</text>
+                    <rect x="20" y="250" width="460" height="30" rx="8" ry="8" fill="#000000" />
+                    <text x="250" y="271" class="sans-serif" font-size="14" font-weight="bold" fill="#ffffff" text-anchor="middle">Cita: ${fullDateText} - ${time}</text>
+                    <rect x="20" y="290" width="460" height="${dynamicDetailsHeight}" rx="8" fill="#374151" />
+                    <rect x="20" y="290" width="460" height="40" rx="8" ry="8" fill="url(#grad)" style="border-bottom-left-radius: 0; border-bottom-right-radius: 0;" />
+                    <text x="250" y="317" class="sans-serif" font-size="16" font-weight="bold" fill="#ffffff" text-anchor="middle">${service}</text>
+                    ${detailItemsSVG}
+                    <g transform="translate(0, ${detailY})">
+                        <rect x="20" y="0" width="460" height="50" rx="5" fill="#000000" />
+                        <text x="120" y="20" text-anchor="middle" class="sans-serif" font-size="14" fill="#d1d5db">Precio</text>
+                        <text x="120" y="40" text-anchor="middle" class="sans-serif" font-size="16" font-weight="bold" fill="#10b981">$${parseFloat(price || 0).toFixed(2)}</text>
+                        <text x="250" y="20" text-anchor="middle" class="sans-serif" font-size="14" fill="#d1d5db">Anticipo</text>
+                        <text x="250" y="40" text-anchor="middle" class="sans-serif" font-size="16" font-weight="bold" fill="#f59e0b">$${parseFloat(advance || 0).toFixed(2)}</text>
+                        <text x="380" y="20" text-anchor="middle" class="sans-serif" font-size="14" fill="#d1d5db">Saldo</text>
+                        <text x="380" y="40" text-anchor="middle" class="sans-serif" font-size="16" font-weight="bold" fill="#ef4444">$${balance}</text>
+                    </g>
+                    <rect x="20" y="${detailY + 60}" width="460" height="30" rx="8" ry="8" fill="#000000" />
+                    <text x="250" y="${detailY + 81}" class="sans-serif" font-size="12" font-weight="bold" fill="#ffffff" text-anchor="middle">Fotografía | Publicidad | Marketing | Música | Audiovisuales</text>
+                </svg>`;
+            
+            const svgBlob = new Blob([svgString], { type: 'image/svg+xml;charset=utf-8' });
+            const url = URL.createObjectURL(svgBlob);
+            const image = new window.Image();
+
+            image.onload = () => {
+                const canvas = document.createElement('canvas');
+                canvas.width = 500;
+                canvas.height = totalHeight;
+                const ctx = canvas.getContext('2d');
+                ctx.drawImage(image, 0, 0);
+                const link = document.createElement('a');
+                link.href = canvas.toDataURL('image/png');
+                link.download = `Recibo - ${app.client}.png`;
+                document.body.appendChild(link);
+                link.click();
+                document.body.removeChild(link);
+                URL.revokeObjectURL(url);
+            };
+            image.src = url;
+        };
+
+        // --- React Components ---
+        const FormInput = React.memo(({ label, name, type = 'text', value, onChange, children, ...props }) => (
+            <div>
+                <label htmlFor={name} className="block text-sm font-medium text-gray-300 mb-1">{label}</label>
+                {type === 'select' ? (
+                    <select id={name} name={name} value={value} onChange={onChange} className="bg-gray-700 border border-gray-600 text-white text-sm rounded-lg focus:ring-pink-500 focus:border-pink-500 block w-full p-2.5" {...props}>
+                        {children}
+                    </select>
+                ) : (
+                    <input id={name} name={name} type={type} value={value} onChange={onChange} className="bg-gray-700 border border-gray-600 text-white text-sm rounded-lg focus:ring-pink-500 focus:border-pink-500 block w-full p-2.5" {...props} />
+                )}
+            </div>
+        ));
+
+        const DetailItem = React.memo(({ icon, value, condition = true }) => {
+            if (!condition) return null;
+            return <div className="flex items-center gap-2" dangerouslySetInnerHTML={{ __html: `${icon} <span class="text-gray-300">${value}</span>` }} />;
+        });
+
+        const InfoWidget = React.memo(({ icon, title, value }) => (
+            <div className="bg-gray-800 p-3 rounded-lg flex items-center gap-3">
+                <div className="text-pink-400">{icon}</div>
+                <div><p className="text-gray-400 text-xs">{title}</p><p className="text-white font-semibold text-base">{value}</p></div>
+            </div>
+        ));
+
+        const AppointmentItem = React.memo(({ app, onToggleStatus, onDownloadInvoice, onDelete }) => {
+            const whatsAppMessage = useMemo(() => {
+                let message = `*Confirmación de Cita*\n\nHola, *${app.client}*.\n\n*Detalles de Cita:*\n- *Servicio:* ${app.service}\n- *Fecha:* ${new Date(app.date + 'T00:00:00').toLocaleDateString('es-ES', { dateStyle: 'full' })}\n- *Hora:* ${app.time}\n- *Paquete:* ${app.packageNo} (${packageDetails[app.packageNo]})\n`;
+                if (app.balloonColor && app.balloonColor !== 'N/U') message += `- *Color Globos:* ${app.balloonColor}\n`;
+                if (app.birthdayNo && app.birthdayNo !== 'N/U') message += `- *No. Cumpleaños:* ${app.birthdayNo}\n`;
+                message += `- *Fondo(s):* ${app.backgroundColor1}${app.backgroundCount === '2' ? ', ' + app.backgroundColor2 : ''}\n\n*Detalles Financieros:*\n- *Precio Total:* $${parseFloat(app.price || 0).toFixed(2)}\n- *Anticipo:* $${parseFloat(app.advance || 0).toFixed(2)}\n- *Saldo Pendiente:* $${(parseFloat(app.price || 0) - parseFloat(app.advance || 0)).toFixed(2)}\n\n*JGM Studios © ¡Tu Mejor Opción!*`;
+                return `https://wa.me/?text=${encodeURIComponent(message)}`;
+            }, [app]);
+
+            const googleCalendarLink = useMemo(() => {
+                const startTime = new Date(`${app.date} ${app.time.replace(/(am|pm)/i, ' $1')}`);
+                const endTime = new Date(startTime.getTime() + 60 * 60 * 1000); // Assume 1 hour duration
+                const formatDate = (date) => date.toISOString().replace(/-|:|\.\d{3}/g, '');
+                let details = `--- Detalles de la Sesión ---\nServicio: ${app.service}\nPaquete: ${app.packageNo} (${packageDetails[app.packageNo]})\n\n--- Personalización ---\n`;
+                if (app.balloonColor && app.balloonColor !== 'N/U') details += `Color de Globos: ${app.balloonColor}\n`;
+                if (app.birthdayNo && app.birthdayNo !== 'N/U') details += `Número de Cumpleaños: ${app.birthdayNo}\n`;
+                details += `Fondo 1: ${app.backgroundColor1}\n`;
+                if (app.backgroundCount === '2') details += `Fondo 2: ${app.backgroundColor2}\n`;
+                details += `\n--- Resumen Financiero ---\nPrecio Total: $${parseFloat(app.price || 0).toFixed(2)}\nAnticipo: $${parseFloat(app.advance || 0).toFixed(2)}\nSaldo Pendiente: $${(parseFloat(app.price || 0) - parseFloat(app.advance || 0)).toFixed(2)}\n`;
+                const params = new URLSearchParams({ text: `${app.client} - ${app.service}`, dates: `${formatDate(startTime)}/${formatDate(endTime)}`, details, location: 'JGM Studios, Estelí, Nicaragua' });
+                return `https://www.google.com/calendar/render?action=TEMPLATE&${params.toString()}`;
+            }, [app]);
+
+            return (
+                <div className={`bg-gray-700 rounded-lg p-4 transition-all duration-300 hover:shadow-pink-500/20 hover:shadow-lg ${app.isFinished ? 'opacity-60' : ''}`}>
+                    <div className="flex justify-between items-start">
+                        <div>
+                            <p className="font-bold text-xl text-white">{app.client}</p>
+                            <p className="text-md text-pink-400 font-semibold">{app.service}</p>
+                            <p className="text-sm text-yellow-300">{new Date(app.date + 'T00:00:00').toLocaleDateString('es-ES', { weekday: 'long', month: 'long', day: 'numeric' })} - {app.time}</p>
+                        </div>
+                        <div className="flex items-center gap-2 flex-shrink-0 ml-4">
+                            <button onClick={() => onToggleStatus(app.id, !app.isFinished)} className="p-1 text-gray-400 hover:text-white" title={app.isFinished ? 'Marcar como Pendiente' : 'Marcar como Terminada'}>{app.isFinished ? <i className="fas fa-check-circle text-2xl text-green-500"></i> : <i className="fas fa-arrow-circle-right text-2xl text-blue-500"></i>}</button>
+                            <button onClick={() => onDownloadInvoice(app)} className="p-1 text-gray-400 hover:text-white" title="Generar Recibo"><i className="fas fa-file-alt text-xl text-purple-400"></i></button>
+                            <a href={whatsAppMessage} target="_blank" rel="noopener noreferrer" className="p-1 text-gray-400 hover:text-white" title="Enviar por WhatsApp"><i className="fab fa-whatsapp text-xl text-green-400"></i></a>
+                            <a href={googleCalendarLink} target="_blank" rel="noopener noreferrer" className="p-1 text-gray-400 hover:text-white" title="Añadir a Google Calendar"><i className="fas fa-calendar-plus text-xl text-blue-400"></i></a>
+                            <button onClick={() => onDelete(app.id)} className="p-1 text-gray-400 hover:text-white" title="Eliminar Cita"><i className="fas fa-trash-alt text-xl text-red-500"></i></button>
+                        </div>
+                    </div>
+                    <div className="mt-4 pt-4 border-t border-gray-600 space-y-3">
+                        <div className="grid grid-cols-2 gap-x-4 gap-y-1 text-sm">
+                            <DetailItem icon={`<i class="fas fa-box-open text-base text-gray-400"></i>`} value={`${app.packageNo} (${packageDetails[app.packageNo]})`} />
+                            <DetailItem icon={`<i class="fas fa-palette text-base text-gray-400"></i>`} value={`Fondo 1: ${app.backgroundColor1}`} />
+                            <DetailItem icon={`<i class="fas fa-layer-group text-base text-gray-400"></i>`} value={`Fondo 2: ${app.backgroundColor2}`} condition={app.backgroundCount === '2'} />
+                            <DetailItem icon={`<i class="fas fa-tint text-base text-gray-400"></i>`} value={`Globos: ${app.balloonColor}`} condition={app.balloonColor && app.balloonColor !== 'N/U'} />
+                            <DetailItem icon={`<i class="fas fa-gift text-base text-gray-400"></i>`} value={`Cumple: ${app.birthdayNo}`} condition={app.birthdayNo && app.birthdayNo !== 'N/U'} />
+                        </div>
+                        <div className="flex justify-around items-center bg-gray-600/50 p-3 rounded-md mt-2 text-center">
+                            <div className="font-semibold text-white text-base">Precio<span className="block text-green-400">${parseFloat(app.price || 0).toFixed(2)}</span></div>
+                            <div className="font-semibold text-white text-base">Anticipo<span className="block text-yellow-400">${parseFloat(app.advance || 0).toFixed(2)}</span></div>
+                            <div className="font-semibold text-white text-base">Saldo<span className="block text-red-400">${(parseFloat(app.price || 0) - parseFloat(app.advance || 0)).toFixed(2)}</span></div>
+                        </div>
+                    </div>
+                </div>
+            );
+        });
+
+        // --- Main App Component ---
+        function HorusDateApp({ db, auth, collection, doc, setDoc, deleteDoc, onSnapshot, updateDoc }) {
+            const [appointments, setAppointments] = useState([]);
+            const [newAppointment, setNewAppointment] = useState(INITIAL_FORM_STATE);
+            const [searchTerm, setSearchTerm] = useState('');
+            const currentUser = auth.currentUser;
+
+            useEffect(() => {
+                if (!currentUser) return;
+                const appointmentsCol = collection(db, 'users', currentUser.uid, 'appointments');
+                const unsubscribe = onSnapshot(appointmentsCol, (snapshot) => {
+                    const apps = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+                    setAppointments(apps);
+                });
+                return () => unsubscribe();
+            }, [currentUser, db, collection, onSnapshot]);
+
+            const filteredAndSortedAppointments = useMemo(() => {
+                return [...appointments]
+                    .filter(app => app.client.toLowerCase().includes(searchTerm.toLowerCase()))
+                    .sort((a, b) => b.id - a.id);
+            }, [appointments, searchTerm]);
+
+            const handleInputChange = useCallback((e) => {
+                setNewAppointment(prev => ({ ...prev, [e.target.name]: e.target.value }));
+            }, []);
+            
+            const handleAddAppointment = useCallback(async (e) => {
+                e.preventDefault();
+                if (newAppointment.client && newAppointment.time && newAppointment.date && currentUser) {
+                    const id = Date.now().toString();
+                    const finalData = { ...newAppointment, id, isFinished: false, balloonColor: newAppointment.balloonColor.trim() || 'N/U', birthdayNo: newAppointment.birthdayNo.trim() || 'N/U' };
+                    await setDoc(doc(db, 'users', currentUser.uid, 'appointments', id), finalData);
+                    setNewAppointment(INITIAL_FORM_STATE);
+                }
+            }, [newAppointment, currentUser, db, doc, setDoc]);
+
+            const handleDeleteAppointment = useCallback(async (id) => {
+                 if (!currentUser) return;
+                 window.showConfirmModal({
+                    title: '¿Eliminar Cita?',
+                    message: 'Esta acción es irreversible. ¿Está seguro de que desea eliminar esta cita?',
+                    onConfirm: async () => {
+                         await deleteDoc(doc(db, 'users', currentUser.uid, 'appointments', id));
+                    }
+                });
+            }, [currentUser, db, doc, deleteDoc]);
+
+            const handleToggleStatus = useCallback(async (id, newStatus) => {
+                if (currentUser) {
+                    await updateDoc(doc(db, 'users', currentUser.uid, 'appointments', id), { isFinished: newStatus });
+                }
+            }, [currentUser, db, doc, updateDoc]);
+
+            const handleDownloadInvoice = useCallback((app) => downloadInvoiceAsPNG(app), []);
+
+            const currentDate = new Date().toLocaleDateString('es-ES', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
+            const currentTime = new Date().toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' });
+
+            return (
+            <div className="bg-gray-900 text-white min-h-screen font-sans p-4 sm:p-8">
+                <div className="max-w-7xl mx-auto">
+                    <header className="mb-8 text-center">
+                         <div className="w-16 h-16 mb-2 mx-auto horus-eye-wrapper text-purple-400">
+                            <svg viewBox="0 0 100 65" fill="none" stroke="currentColor" strokeWidth="3.5" strokeLinecap="round" strokeLinejoin="round">
+                                <g transform="translate(0, 5)"><path d="M5 30 C 20 5, 80 5, 95 30 C 80 55, 20 55, 5 30Z"></path><circle cx="50" cy="30" r="12" fill="currentColor"></circle><path d="M50 42 C 55 55, 65 62, 75 58"></path><path d="M75 58 L 70 65"></path><g strokeWidth="3"><path d="M50 12 L 50 5"></path><path d="M25 20 L 18 13"></path><path d="M75 20 L 82 13"></path><path d="M8 30 L 0 30"></path><path d="M92 30 L 100 30"></path><path d="M25 40 L 18 47"></path><path d="M75 40 L 82 47"></path></g></g>
+                            </svg>
+                        </div>
+                        <h1 className="text-4xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-purple-400 to-pink-600">
+                           Horus Date
+                        </h1>
+                        <p className="text-gray-400 mt-2">El Ojo que todo lo Agenda</p>
+                    </header>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-8">
+                        <InfoWidget icon={<i className="fas fa-calendar-alt text-2xl"></i>} title="Fecha del Sistema" value={currentDate} />
+                        <InfoWidget icon={<i className="fas fa-clock text-2xl"></i>} title="Hora del Sistema" value={currentTime} />
+                    </div>
+                    <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                        <div className="bg-gray-800 p-6 rounded-xl shadow-lg flex flex-col mb-8 lg:mb-0">
+                            <h2 className="text-2xl font-semibold mb-4 text-white flex-shrink-0">Lista de Citas</h2>
+                            <div className="mb-4">
+                                <input type="text" placeholder="Buscar cliente..." value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)}
+                                    className="bg-gray-700 border border-gray-600 text-white text-sm rounded-lg focus:ring-pink-500 focus:border-pink-500 block w-full p-2.5"/>
+                            </div>
+                            <div className="flex-grow overflow-y-auto max-h-[70vh] pr-2">
+                                <div className="space-y-4">
+                                    {filteredAndSortedAppointments.length > 0 ? (
+                                    filteredAndSortedAppointments.map(app => (
+                                        <AppointmentItem key={app.id} app={app} onToggleStatus={handleToggleStatus} onDownloadInvoice={handleDownloadInvoice} onDelete={handleDeleteAppointment} />
+                                    ))
+                                    ) : ( <p className="text-gray-400 text-center py-8">No hay citas que coincidan con la búsqueda.</p> )}
+                                </div>
+                            </div>
+                        </div>
+                        <div className="bg-gray-800 p-6 rounded-xl shadow-lg h-fit">
+                            <h2 className="text-2xl font-semibold mb-4 text-white">Nueva Cita</h2>
+                            <form onSubmit={handleAddAppointment} className="space-y-4">
+                                <FormInput label="Cliente" name="client" value={newAppointment.client} onChange={handleInputChange} placeholder="Nombre del cliente" required />
+                                <div className="grid grid-cols-2 gap-4">
+                                <FormInput label="Fecha" name="date" type="date" value={newAppointment.date} onChange={handleInputChange} required />
+                                <FormInput label="Hora" name="time" type="select" value={newAppointment.time} onChange={handleInputChange} required>
+                                    <option>10:30am</option><option>1:30pm</option><option>3:30pm</option><option>5:30pm</option><option>7:30pm</option>
+                                </FormInput>
+                                </div>
+                                <FormInput label="Servicio" name="service" type="select" value={newAppointment.service} onChange={handleInputChange}>
+                                <option>Cumpleaños Glamorous</option><option>Casual</option><option>Maternidad</option><option>15 Glamorous</option><option>Exteriores</option><option>Locales</option><option>Otro</option>
+                                </FormInput>
+                                <FormInput label="Paquete" name="packageNo" type="select" value={newAppointment.packageNo} onChange={handleInputChange}>
+                                <option>Pack 1</option><option>Pack 2</option><option>Pack 3</option><option>Pack 4</option><option>Pack 5</option>
+                                </FormInput>
+                                {newAppointment.packageNo && (<div className="bg-gray-700 p-2 rounded-md text-center"><p className="text-sm font-medium text-pink-400 flex items-center justify-center gap-2"><i className="fas fa-image text-base"></i> {packageDetails[newAppointment.packageNo]}</p></div>)}
+                                <FormInput label="Color de Globos" name="balloonColor" value={newAppointment.balloonColor} onChange={handleInputChange} placeholder="Ej: Rosa, Dorado" />
+                                <FormInput label="No. Cumpleaños" name="birthdayNo" type="number" value={newAppointment.birthdayNo} onChange={handleInputChange} placeholder="Ej: 15" />
+                                <div className="bg-gray-700/50 p-3 rounded-lg space-y-4">
+                                <label className="text-sm font-medium text-gray-300 block">Detalles de Fondo</label>
+                                <div className="flex items-center gap-x-4"><span className="text-sm text-gray-400">Cantidad:</span><label className="flex items-center gap-2"><input type="radio" name="backgroundCount" value="1" checked={newAppointment.backgroundCount === '1'} onChange={handleInputChange} className="form-radio bg-gray-600 text-pink-500" /> 1 Fondo</label><label className="flex items-center gap-2"><input type="radio" name="backgroundCount" value="2" checked={newAppointment.backgroundCount === '2'} onChange={handleInputChange} className="form-radio bg-gray-600 text-pink-500" /> 2 Fondos</label></div>
+                                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                    <FormInput label="Color de Fondo 1" name="backgroundColor1" type="select" value={newAppointment.backgroundColor1} onChange={handleInputChange}><option>Blanco</option><option>Negro</option><option>Beige</option><option>Rosado</option><option>Beige Painted</option><option>Gris Painted</option></FormInput>
+                                    {newAppointment.backgroundCount === '2' && (<FormInput label="Color de Fondo 2" name="backgroundColor2" type="select" value={newAppointment.backgroundColor2} onChange={handleInputChange}><option>Blanco</option><option>Negro</option><option>Beige</option><option>Rosado</option><option>Beige Painted</option><option>Gris Painted</option></FormInput>)}
+                                </div>
+                                </div>
+                                <div className="grid grid-cols-2 gap-4">
+                                <FormInput label="Precio ($)" name="price" type="number" step="0.01" value={newAppointment.price} onChange={handleInputChange} placeholder="0.00" required />
+                                <FormInput label="Anticipo ($)" name="advance" type="number" step="0.01" value={newAppointment.advance} onChange={handleInputChange} placeholder="0.00" required />
+                                </div>
+                                <button type="submit" className="w-full bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 text-white font-bold py-3 rounded-lg shadow-lg flex items-center justify-center gap-2 transition-transform hover:scale-105 mt-2"><i className="fas fa-plus text-xl"></i><span>Agendar Cita</span></button>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            );
+        }
+
+        // Attach the React component to the window object so it can be called from the module script
+        window.HorusDateApp = HorusDateApp;
+    </script>
+</body>
+</html>
